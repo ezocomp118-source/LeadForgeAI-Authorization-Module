@@ -71,28 +71,35 @@ export type RegisterCandidate = Partial<{
 
 export type PasswordPolicyResult =
 	| { readonly ok: true }
-	| { readonly ok: false; readonly reasons: readonly string[] };
+	| {
+			readonly ok: false;
+			readonly tooShort: boolean;
+			readonly missingLower: boolean;
+			readonly missingUpper: boolean;
+			readonly missingDigit: boolean;
+			readonly missingSymbol: boolean;
+	  };
 
 export const validatePasswordPolicy = (
 	password: string,
 ): PasswordPolicyResult => {
-	const reasons: string[] = [];
-	if (password.length < 12) {
-		reasons.push("Пароль короче 12 символов");
-	}
-	if (!/[a-z]/.test(password)) {
-		reasons.push("Нет строчных букв");
-	}
-	if (!/[A-Z]/.test(password)) {
-		reasons.push("Нет заглавных букв");
-	}
-	if (!/[0-9]/.test(password)) {
-		reasons.push("Нет цифр");
-	}
-	if (!/[^A-Za-z0-9]/.test(password)) {
-		reasons.push("Нет спецсимволов");
-	}
-	return reasons.length === 0 ? { ok: true } : { ok: false, reasons };
+	const tooShort = password.length < 12;
+	const missingLower = !/[a-z]/.test(password);
+	const missingUpper = !/[A-Z]/.test(password);
+	const missingDigit = !/[0-9]/.test(password);
+	const missingSymbol = !/[^A-Za-z0-9]/.test(password);
+	const failed =
+		tooShort || missingLower || missingUpper || missingDigit || missingSymbol;
+	return failed
+		? {
+				ok: false,
+				tooShort,
+				missingLower,
+				missingUpper,
+				missingDigit,
+				missingSymbol,
+			}
+		: { ok: true };
 };
 
 export const parseRegister = (

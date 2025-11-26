@@ -206,7 +206,7 @@ export const postRegister: RequestHandler = (req, res, next) => {
 	}
 	const policy = validatePasswordPolicy(payload.password);
 	if (!policy.ok) {
-		res.status(400).json({ error: "weak_password", reasons: policy.reasons });
+		res.status(400).json({ error: "weak_password", policy });
 		return;
 	}
 	const tokenHash = hashToken(payload.token);
