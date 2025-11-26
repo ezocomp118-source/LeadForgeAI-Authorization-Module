@@ -69,6 +69,8 @@ export const users = pgTable("users", {
 	lastName: text("last_name").notNull(),
 	email: text("email").notNull().unique(),
 	phone: text("phone").notNull(),
+	workEmail: text("work_email"),
+	workPhone: text("work_phone"),
 	passwordHash: text("password_hash").notNull(),
 	emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
 	phoneVerifiedAt: timestamp("phone_verified_at", { withTimezone: true }),
