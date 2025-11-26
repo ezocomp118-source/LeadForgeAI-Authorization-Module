@@ -69,6 +69,32 @@ export type RegisterCandidate = Partial<{
 	password: string;
 }>;
 
+export type PasswordPolicyResult =
+	| { readonly ok: true }
+	| { readonly ok: false; readonly reasons: readonly string[] };
+
+export const validatePasswordPolicy = (
+	password: string,
+): PasswordPolicyResult => {
+	const reasons: string[] = [];
+	if (password.length < 12) {
+		reasons.push("Пароль короче 12 символов");
+	}
+	if (!/[a-z]/.test(password)) {
+		reasons.push("Нет строчных букв");
+	}
+	if (!/[A-Z]/.test(password)) {
+		reasons.push("Нет заглавных букв");
+	}
+	if (!/[0-9]/.test(password)) {
+		reasons.push("Нет цифр");
+	}
+	if (!/[^A-Za-z0-9]/.test(password)) {
+		reasons.push("Нет спецсимволов");
+	}
+	return reasons.length === 0 ? { ok: true } : { ok: false, reasons };
+};
+
 export const parseRegister = (
 	body: RegisterCandidate | null | undefined,
 ): RegisterPayload | null => {

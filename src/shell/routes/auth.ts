@@ -17,6 +17,7 @@ import {
 	parseLogin,
 	parseRegister,
 	type RegisterCandidate,
+	validatePasswordPolicy,
 } from "./auth-helpers.js";
 
 const hashToken = (token: string): string =>
@@ -201,6 +202,11 @@ export const postRegister: RequestHandler = (req, res, next) => {
 	const payload = parseRegister(req.body as RegisterCandidate);
 	if (!payload) {
 		res.status(400).json({ error: "invalid_payload" });
+		return;
+	}
+	const policy = validatePasswordPolicy(payload.password);
+	if (!policy.ok) {
+		res.status(400).json({ error: "weak_password", reasons: policy.reasons });
 		return;
 	}
 	const tokenHash = hashToken(payload.token);

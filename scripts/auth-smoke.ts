@@ -133,7 +133,7 @@ const main = async () => {
 		{
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ token, password: "User123!" })
+			body: JSON.stringify({ token, password: "User123!Strong" })
 		},
 		jar
 	);
@@ -153,7 +153,7 @@ const main = async () => {
 		{
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ email: invite.email, password: "User123!" })
+			body: JSON.stringify({ email: invite.email, password: "User123!Strong" })
 		},
 		jar
 	);
