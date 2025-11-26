@@ -9,7 +9,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 
-import { departments, positions, users } from "./identity.js";
+import { departments, positions, users } from "./identity.ts";
 
 // CHANGE: Onboarding, profile enrichment, and employment change logs
 // WHY: Persist invitation-driven registration, user-editable profile fields, and auditable admin-only employment moves

@@ -43,6 +43,8 @@
 		// CHANGE: Add verbatimModuleSyntax for explicit import control
 		// WHY: Require explicit 'type' keyword for type-only imports, better bundler compatibility
 		"verbatimModuleSyntax": true,
+		// Allow explicit .ts extensions (used for Drizzle schema entrypoint)
+		"allowImportingTsExtensions": true,
 
 		// ═══════════════════════════════════════════════════════════════════════════
 		// MODULE SYSTEM (modernized for Effect and ESM)
