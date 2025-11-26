@@ -6,9 +6,6 @@
 	"scripts": {
 		"dev": "tsx src/app/server.ts",
 		"lint": "npx @ton-ai-core/vibecode-linter client/src",
-		"lint:eslint": "eslint .",
-		"format": "biome format .",
-		"check:types": "tsc --noEmit",
 		"drizzle:generate": "drizzle-kit generate",
 		"drizzle:push": "drizzle-kit push"
 	},
