@@ -23,5 +23,5 @@ export type HealthStatus = {
  */
 export const computeHealth = (now: number): HealthStatus => ({
 	status: "ok",
-	timestamp: now
+	timestamp: now,
 });

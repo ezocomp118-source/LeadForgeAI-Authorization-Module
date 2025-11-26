@@ -4,8 +4,8 @@
 // REF: REQ-DB-IDENTITY
 // PURITY: CORE
 // COMPLEXITY: O(1) import indirection
-export * from "./identity.ts";
-export * from "./people.ts";
-export * from "./projects.ts";
-export * from "./security.ts";
-export * from "./time.ts";
+export * from "./identity.js";
+export * from "./people.js";
+export * from "./projects.js";
+export * from "./security.js";
+export * from "./time.js";

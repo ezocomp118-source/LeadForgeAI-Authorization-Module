@@ -1,5 +1,5 @@
+import type { Server } from "node:http";
 import { Effect, pipe } from "effect";
-import type { Server } from "http";
 import type { Express } from "express";
 
 import { createApp } from "../shell/app.js";
@@ -29,7 +29,7 @@ type ServerError = {
  */
 const serverError = (reason: string): ServerError => ({
 	_tag: "ServerError",
-	reason
+	reason,
 });
 
 /**
@@ -43,8 +43,11 @@ const serverError = (reason: string): ServerError => ({
  * INVARIANT: If success, httpServer.address().port === port
  * COMPLEXITY: O(1)
  */
-const listen = (app: Express, port: number): Effect.Effect<ServerInfo, ServerError> =>
-	Effect.async<ServerInfo, ServerError, never>((resume) => {
+const listen = (
+	app: Express,
+	port: number,
+): Effect.Effect<ServerInfo, ServerError> =>
+	Effect.async<ServerInfo, ServerError>((resume) => {
 		const httpServer = app.listen(port, (): void => {
 			resume(Effect.succeed({ port, httpServer }));
 		});
@@ -67,10 +70,12 @@ const listen = (app: Express, port: number): Effect.Effect<ServerInfo, ServerErr
 // EFFECT: Effect<ServerInfo, ServerError, never>
 // INVARIANT: Server starts exactly once and resource cleanup closes listener
 // COMPLEXITY: O(1) startup
-const startServer = (config: ServerConfig): Effect.Effect<ServerInfo, ServerError> =>
+const startServer = (
+	config: ServerConfig,
+): Effect.Effect<ServerInfo, ServerError> =>
 	pipe(
 		Effect.sync(createApp),
-		Effect.flatMap((app) => listen(app, config.port))
+		Effect.flatMap((app) => listen(app, config.port)),
 	);
 
 /**
@@ -99,7 +104,8 @@ const parsePort = (raw: string | undefined): number => {
  * INVARIANT: Server starts at provided port or fails with typed reason
  * COMPLEXITY: O(1) startup
  */
-const program = startServer({ port: parsePort(process.env["PORT"]) });
+const { PORT } = process.env;
+const program = startServer({ port: parsePort(PORT) });
 
 const logFailure = (cause: ServerError): Effect.Effect<void> =>
 	Effect.sync(() => {
@@ -112,5 +118,5 @@ const logSuccess = (info: ServerInfo): Effect.Effect<void> =>
 	});
 
 Effect.runFork(
-	pipe(program, Effect.tap(logSuccess), Effect.tapError(logFailure))
+	pipe(program, Effect.tap(logSuccess), Effect.tapError(logFailure)),
 );

@@ -1,6 +1,15 @@
-import { date, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+	date,
+	pgEnum,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uniqueIndex,
+	uuid,
+} from "drizzle-orm/pg-core";
 
-import { departments, positions, users } from "./identity.ts";
+import { departments, positions, users } from "./identity.js";
 
 // CHANGE: Onboarding, profile enrichment, and employment change logs
 // WHY: Persist invitation-driven registration, user-editable profile fields, and auditable admin-only employment moves
@@ -10,9 +19,29 @@ import { departments, positions, users } from "./identity.ts";
 // PURITY: CORE
 // INVARIANT: Invitation token hashes are unique; employment changes preserve before/after values for departments and positions
 // COMPLEXITY: O(1) per persisted onboarding artifact
-export const invitationStatus = pgEnum("invitation_status", ["pending", "accepted", "expired", "revoked"]);
+export const invitationStatus = pgEnum("invitation_status", [
+	"pending",
+	"accepted",
+	"expired",
+	"revoked",
+]);
 
-export const messengerPlatform = pgEnum("messenger_platform", ["telegram", "whatsapp"]);
+export const messengerPlatform = pgEnum("messenger_platform", [
+	"telegram",
+	"whatsapp",
+]);
+
+// CHANGE: Builder for audit timestamps to avoid duplicated column definitions
+// WHY: Keep jscpd clean while creating fresh column builders per table
+// PURITY: CORE
+const buildAuditTimestamps = () => ({
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+});
 
 export const registrationInvitations = pgTable(
 	"registration_invitations",
@@ -25,10 +54,16 @@ export const registrationInvitations = pgTable(
 		lastName: text("last_name").notNull(),
 		departmentId: uuid("department_id")
 			.notNull()
-			.references(() => departments.id, { onDelete: "restrict", onUpdate: "cascade" }),
+			.references(() => departments.id, {
+				onDelete: "restrict",
+				onUpdate: "cascade",
+			}),
 		positionId: uuid("position_id")
 			.notNull()
-			.references(() => positions.id, { onDelete: "restrict", onUpdate: "cascade" }),
+			.references(() => positions.id, {
+				onDelete: "restrict",
+				onUpdate: "cascade",
+			}),
 		invitedBy: uuid("invited_by")
 			.notNull()
 			.references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -36,12 +71,19 @@ export const registrationInvitations = pgTable(
 		expiresAt: timestamp("expires_at", { withTimezone: true }),
 		acceptedAt: timestamp("accepted_at", { withTimezone: true }),
 		revokedAt: timestamp("revoked_at", { withTimezone: true }),
-		consumedByUserId: uuid("consumed_by_user_id").references(() => users.id, { onDelete: "set null", onUpdate: "cascade" }),
-		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+		consumedByUserId: uuid("consumed_by_user_id").references(() => users.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
 	},
-	(table) => ({
-		uniqueTokenHash: uniqueIndex("registration_invitations_token_hash_unique").on(table.tokenHash)
-	})
+	(table) => [
+		uniqueIndex("registration_invitations_token_hash_unique").on(
+			table.tokenHash,
+		),
+	],
 );
 
 export const userProfiles = pgTable(
@@ -53,12 +95,11 @@ export const userProfiles = pgTable(
 		birthDate: date("birth_date", { mode: "date" }),
 		avatarUrl: text("avatar_url"),
 		about: text("about"),
-		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+		...buildAuditTimestamps(),
 	},
-	(table) => ({
-		pk: primaryKey({ columns: [table.userId], name: "user_profiles_pk" })
-	})
+	(table) => [
+		primaryKey({ columns: [table.userId], name: "user_profiles_pk" }),
+	],
 );
 
 export const userMessengers = pgTable(
@@ -69,12 +110,14 @@ export const userMessengers = pgTable(
 			.references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
 		platform: messengerPlatform("platform").notNull(),
 		handle: text("handle").notNull(),
-		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+		...buildAuditTimestamps(),
 	},
-	(table) => ({
-		pk: primaryKey({ columns: [table.userId, table.platform], name: "user_messengers_pk" })
-	})
+	(table) => [
+		primaryKey({
+			columns: [table.userId, table.platform],
+			name: "user_messengers_pk",
+		}),
+	],
 );
 
 // CHANGE: Employment change log to record admin-only updates of department/position/work contacts
@@ -90,27 +133,48 @@ export const employmentChangeLog = pgTable("employment_change_log", {
 	userId: uuid("user_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
-	changedBy: uuid("changed_by").references(() => users.id, { onDelete: "set null", onUpdate: "cascade" }),
-	previousDepartmentId: uuid("previous_department_id").references(() => departments.id, {
+	changedBy: uuid("changed_by").references(() => users.id, {
 		onDelete: "set null",
-		onUpdate: "cascade"
+		onUpdate: "cascade",
 	}),
-	newDepartmentId: uuid("new_department_id").references(() => departments.id, { onDelete: "set null", onUpdate: "cascade" }),
-	previousPositionId: uuid("previous_position_id").references(() => positions.id, { onDelete: "set null", onUpdate: "cascade" }),
-	newPositionId: uuid("new_position_id").references(() => positions.id, { onDelete: "set null", onUpdate: "cascade" }),
+	previousDepartmentId: uuid("previous_department_id").references(
+		() => departments.id,
+		{
+			onDelete: "set null",
+			onUpdate: "cascade",
+		},
+	),
+	newDepartmentId: uuid("new_department_id").references(() => departments.id, {
+		onDelete: "set null",
+		onUpdate: "cascade",
+	}),
+	previousPositionId: uuid("previous_position_id").references(
+		() => positions.id,
+		{ onDelete: "set null", onUpdate: "cascade" },
+	),
+	newPositionId: uuid("new_position_id").references(() => positions.id, {
+		onDelete: "set null",
+		onUpdate: "cascade",
+	}),
 	previousWorkEmail: text("previous_work_email"),
 	newWorkEmail: text("new_work_email"),
 	previousWorkPhone: text("previous_work_phone"),
 	newWorkPhone: text("new_work_phone"),
-	sourceInvitationId: uuid("source_invitation_id").references(() => registrationInvitations.id, {
-		onDelete: "set null",
-		onUpdate: "cascade"
-	}),
+	sourceInvitationId: uuid("source_invitation_id").references(
+		() => registrationInvitations.id,
+		{
+			onDelete: "set null",
+			onUpdate: "cascade",
+		},
+	),
 	reason: text("reason"),
-	changedAt: timestamp("changed_at", { withTimezone: true }).notNull().defaultNow()
+	changedAt: timestamp("changed_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
 });
 
-export type RegistrationInvitationRow = typeof registrationInvitations.$inferSelect;
+export type RegistrationInvitationRow =
+	typeof registrationInvitations.$inferSelect;
 export type UserProfileRow = typeof userProfiles.$inferSelect;
 export type UserMessengerRow = typeof userMessengers.$inferSelect;
 export type EmploymentChangeRow = typeof employmentChangeLog.$inferSelect;

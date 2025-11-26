@@ -15,9 +15,11 @@ export const sessions = pgTable("sessions", {
 	city: text("city"),
 	country: text("country"),
 	userAgent: text("user_agent"),
-	issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
+	issuedAt: timestamp("issued_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
 	expiresAt: timestamp("expires_at", { withTimezone: true }),
-	signedOutAt: timestamp("signed_out_at", { withTimezone: true })
+	signedOutAt: timestamp("signed_out_at", { withTimezone: true }),
 });
 
 export const securityAlerts = pgTable("security_alerts", {
@@ -26,7 +28,9 @@ export const securityAlerts = pgTable("security_alerts", {
 	sessionId: uuid("session_id").notNull(),
 	alertType: text("alert_type").notNull(),
 	description: text("description"),
-	detectedAt: timestamp("detected_at", { withTimezone: true }).notNull().defaultNow()
+	detectedAt: timestamp("detected_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
 });
 
 export type SessionRow = typeof sessions.$inferSelect;

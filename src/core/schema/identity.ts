@@ -1,4 +1,12 @@
-import { pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+	pgEnum,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uniqueIndex,
+	uuid,
+} from "drizzle-orm/pg-core";
 
 // CHANGE: Define organization identity primitives (users, departments, roles) as typed SQL tables
 // WHY: Provide type-level guarantees for access control entities and enable Drizzle codegen
@@ -8,13 +16,19 @@ import { pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 
 // PURITY: CORE
 // INVARIANT: Email values are unique and normalized per user row
 // COMPLEXITY: O(1) storage per inserted entity
-export const systemRole = pgEnum("system_role", ["super_admin", "admin", "manager"]);
+export const systemRole = pgEnum("system_role", [
+	"super_admin",
+	"admin",
+	"manager",
+]);
 
 export const departments = pgTable("departments", {
 	id: uuid("id").defaultRandom().primaryKey(),
 	code: text("code").notNull().unique(),
 	name: text("name").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
 });
 
 // CHANGE: Positions catalogue bound to departments
@@ -31,14 +45,22 @@ export const positions = pgTable(
 		id: uuid("id").defaultRandom().primaryKey(),
 		departmentId: uuid("department_id")
 			.notNull()
-			.references(() => departments.id, { onDelete: "restrict", onUpdate: "cascade" }),
+			.references(() => departments.id, {
+				onDelete: "restrict",
+				onUpdate: "cascade",
+			}),
 		title: text("title").notNull(),
 		description: text("description"),
-		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
 	},
-	(table) => ({
-		uniqueDepartmentTitle: uniqueIndex("positions_department_title_unique").on(table.departmentId, table.title)
-	})
+	(table) => [
+		uniqueIndex("positions_department_title_unique").on(
+			table.departmentId,
+			table.title,
+		),
+	],
 );
 
 export const users = pgTable("users", {
@@ -50,7 +72,9 @@ export const users = pgTable("users", {
 	passwordHash: text("password_hash").notNull(),
 	emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
 	phoneVerifiedAt: timestamp("phone_verified_at", { withTimezone: true }),
-	createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
 });
 
 export const departmentMemberships = pgTable(
@@ -61,17 +85,31 @@ export const departmentMemberships = pgTable(
 			.references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
 		departmentId: uuid("department_id")
 			.notNull()
-			.references(() => departments.id, { onDelete: "cascade", onUpdate: "cascade" }),
+			.references(() => departments.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		positionId: uuid("position_id")
 			.notNull()
-			.references(() => positions.id, { onDelete: "restrict", onUpdate: "cascade" }),
+			.references(() => positions.id, {
+				onDelete: "restrict",
+				onUpdate: "cascade",
+			}),
 		role: systemRole("role").notNull(),
-		assignedBy: uuid("assigned_by").references(() => users.id, { onDelete: "set null", onUpdate: "cascade" }),
-		assignedAt: timestamp("assigned_at", { withTimezone: true }).notNull().defaultNow()
+		assignedBy: uuid("assigned_by").references(() => users.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
+		assignedAt: timestamp("assigned_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
 	},
-	(table) => ({
-		pk: primaryKey({ columns: [table.userId, table.departmentId], name: "department_memberships_pk" })
-	})
+	(table) => [
+		primaryKey({
+			columns: [table.userId, table.departmentId],
+			name: "department_memberships_pk",
+		}),
+	],
 );
 
 export type DepartmentRow = typeof departments.$inferSelect;
