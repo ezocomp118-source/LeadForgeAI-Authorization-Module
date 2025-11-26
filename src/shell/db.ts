@@ -10,6 +10,9 @@ const { DATABASE_URL: databaseUrl } = process.env;
 
 const pool = new Pool({
 	connectionString: databaseUrl,
+	ssl: databaseUrl?.includes("sslmode=require")
+		? { rejectUnauthorized: false }
+		: undefined,
 });
 
 export const db = drizzle(pool, { schema });
