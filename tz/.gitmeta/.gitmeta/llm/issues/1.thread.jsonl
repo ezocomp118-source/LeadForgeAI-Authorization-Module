@@ -1,0 +1,2 @@
+{"type":"meta","obj_type":"issue","repo":"ezocomp118-source/LeadForgeAI","number":1,"title":"Исправить типобезопасность","state":"closed","author":"skulidropek","labels":[],"assignees":[],"milestone":null,"created_at":"2025-11-10T07:43:23Z","closed_at":"2025-11-12T11:52:21Z"}
+{"type":"message","role":"author","author":"skulidropek","created_at":"2025-11-10T07:43:23Z","text":"Везед явно должны быть указаны типы\nНе должно быть unkown или any"}

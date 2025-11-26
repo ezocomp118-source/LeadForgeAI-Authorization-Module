@@ -1,0 +1,2 @@
+{"type":"meta","obj_type":"issue","repo":"ezocomp118-source/LeadForgeAI","number":37,"title":"Разобраться в системе меток","state":"open","author":"ezocomp118-source","labels":[],"assignees":[],"milestone":null,"created_at":"2025-11-13T12:24:03Z","closed_at":null}
+{"type":"message","role":"participant","author":"ezocomp118-source","created_at":"2025-11-13T12:25:02Z","text":"Система меток\n```\nutm_source \nutm_medium\nutm_campaign \nutm_content utm_term\n```"}

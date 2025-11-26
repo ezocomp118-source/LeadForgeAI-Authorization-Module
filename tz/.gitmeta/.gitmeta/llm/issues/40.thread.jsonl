@@ -1,0 +1,2 @@
+{"type":"meta","obj_type":"issue","repo":"ezocomp118-source/LeadForgeAI","number":40,"title":"Исправить подгрузку сообщений внутри контакта","state":"closed","author":"skulidropek","labels":[],"assignees":[],"milestone":null,"created_at":"2025-11-14T07:04:01Z","closed_at":"2025-11-17T15:32:12Z"}
+{"type":"message","role":"author","author":"skulidropek","created_at":"2025-11-14T07:04:01Z","text":"Сейчас у нас большое количество контактов и у них нет сообщений"}

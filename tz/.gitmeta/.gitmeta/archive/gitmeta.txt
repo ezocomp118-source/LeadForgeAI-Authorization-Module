@@ -1,0 +1,368 @@
+=== SUMMARY ===
+Repository: ezocomp118-source/LeadForgeAI
+Description: n/a
+Default branch: main
+Last push: 2025-11-24T18:45:31.000Z
+Stars: 0
+Forks: 0
+Open issues (GitHub): 26
+
+
+=== ISSUES ===
+#44 Заменить типы unknown на реальные типы [closed] by ezocomp118-source @ 2025-11-18T14:47:25.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#43 Чеки не грузятся вообще [closed] by ezocomp118-source @ 2025-11-17T12:41:39.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="1792" height="837" alt="Image" src="https://github.com/user-attachments/assets/450f0dac-eaba-42f6-8b4c-20bdf72a920a" />
+---
+#42 Перенести  "поиск" в "диалоги" [open] by ezocomp118-source @ 2025-11-17T12:36:50.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+УБрать эти элементы
+<img width="1338" height="591" alt="Image" src="https://github.com/user-attachments/assets/874b6228-b5c6-4ab7-b7fc-025876e4c416" />
+
+<img width="1577" height="842" alt="Image" src="https://github.com/user-attachments/assets/ffb9fb90-c2f3-4c35-a189-538a2e3c3217" />
+---
+#41 Добавить подключение несколько апи ключей для VK [closed] by ezocomp118-source @ 2025-11-17T12:34:31.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="1400" height="765" alt="Image" src="https://github.com/user-attachments/assets/3fb703b5-83c8-4440-bbd8-273be8e7ed48" />
+---
+#40 Исправить подгрузку сообщений внутри контакта [closed] by skulidropek @ 2025-11-14T07:04:01.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+Сейчас у нас большое количество контактов и у них нет сообщений
+---
+#39 Когда мы записываем голосовое сообщение что бы оно через EvenLabs автоматически перестраивало голос [open] by ezocomp118-source @ 2025-11-13T12:29:11.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#38 Потестировать каким образом работают голосовые сообщения [open] by ezocomp118-source @ 2025-11-13T12:28:40.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#37 Разобраться в системе меток [open] by ezocomp118-source @ 2025-11-13T12:24:03.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#36 не всё надо подсвечивать менеджерам [open] by ezocomp118-source @ 2025-11-13T12:23:28.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="380" height="754" alt="Image" src="https://github.com/user-attachments/assets/c3f84c5f-bc98-4168-8cac-a7c26f13172c" />
+---
+#35 Медиатека работает криво. Надо иметь возможность добавлять: видео, голосово и тд [open] by ezocomp118-source @ 2025-11-13T12:21:54.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+Нужна для формирования быстрых ответ (Но возможно и не нужна, надо поресёрчить)
+
+<img width="1805" height="857" alt="Image" src="https://github.com/user-attachments/assets/174d88c4-150b-4d18-b730-8c73a0559887" />
+---
+#34 Тут документация по тому как пользоватья платформой [open] by ezocomp118-source @ 2025-11-13T12:19:43.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="1812" height="848" alt="Image" src="https://github.com/user-attachments/assets/cc050890-c40f-481e-9259-0314f72fa148" />
+---
+#33 В аналитике данные не коректные [open] by ezocomp118-source @ 2025-11-13T12:17:06.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+Информация по АПИ сколько денег тратитя на АПИ ключи
+
+
+<img width="1510" height="734" alt="Image" src="https://github.com/user-attachments/assets/4cb3b5a8-27e4-45b5-b00e-e925ba52d47f" />
+---
+#32 Удалить "окна диалога" [closed] by ezocomp118-source @ 2025-11-13T12:14:25.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="752" height="591" alt="Image" src="https://github.com/user-attachments/assets/608ffbd2-1a6e-4976-af88-3e023ee17723" />
+---
+#31 Если человек заблокировал нас то "неактивный" [open] by ezocomp118-source @ 2025-11-13T12:13:48.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="692" height="710" alt="Image" src="https://github.com/user-attachments/assets/810c257b-54a2-4f79-8d22-32933eb8ebc1" />
+---
+#30 Диалоги у которых 0 сообщений что бы не отображались [closed] by ezocomp118-source @ 2025-11-13T12:13:21.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="708" height="736" alt="Image" src="https://github.com/user-attachments/assets/f6048e19-137b-483e-aaba-242ac92ac465" />
+---
+#29 Удалить плашку уведомления на добалвение диалогов [closed] by ezocomp118-source @ 2025-11-13T12:12:44.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="456" height="160" alt="Image" src="https://github.com/user-attachments/assets/ae832594-4cc3-4be2-8545-e9d88adc5857" />
+---
+#28 Чеки подгружать файлами в БД [closed] by ezocomp118-source @ 2025-11-13T12:10:21.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#27 Cделать возможность видеть не прочитанные сообщения из соц сетей (ВК, ТГ) [open] by ezocomp118-source @ 2025-11-13T12:08:50.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#26 Cделать что бы сообщения людей из вк загружались быстрее [closed] by skulidropek @ 2025-11-12T18:37:02.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#24 Локальный запуск проекта [closed] by skulidropek @ 2025-11-12T14:51:10.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#23 Понять что спам ошибок в консоли [open] by skulidropek @ 2025-11-12T14:50:55.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="1089" height="776" alt="Image" src="https://github.com/user-attachments/assets/181dee34-a2e4-43ca-86b9-48ecb193f044" />
+---
+#22 Не работает AI обработка [open] by skulidropek @ 2025-11-12T11:52:01.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="538" height="345" alt="Image" src="https://github.com/user-attachments/assets/3511e9d0-0e14-454b-aadb-2fa113b498af" />
+---
+#21 Исправить подгрузку диалогов (Что бы отображались сообщения пользователя) [closed] by skulidropek @ 2025-11-12T11:51:11.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="507" height="390" alt="Image" src="https://github.com/user-attachments/assets/0da88f94-09f9-4ae8-a0e4-fa345e5acf5b" />
+---
+#20 Исправить поиск [closed] by skulidropek @ 2025-11-12T11:50:38.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+<img width="494" height="417" alt="Image" src="https://github.com/user-attachments/assets/6379ccaa-1e6b-4786-88b2-25c7339b73a4" />
+---
+#19 Должен быть автоперевод что бы русскоговорящие менеджерыы могли общаться с любым GEO (13:54) [open] by skulidropek @ 2025-11-12T11:49:36.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#18 В настройку ботов добавить больше функционала (13:21) Это нужно что бы технари постепенно переходили с Sendler [open] by skulidropek @ 2025-11-12T11:49:25.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#17 Ключевая задача, что бы постепенно переходить на комбайн ботов (13:06) [open] by skulidropek @ 2025-11-12T11:49:10.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#16 Надо разделять авторизацию на операторов и не операторов (09:35) [open] by skulidropek @ 2025-11-12T11:48:56.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#15 Должна работать авторизация (08:47) [open] by skulidropek @ 2025-11-12T11:48:41.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#14 Исправить то что нейронка считает не правильно данные с чеков (08:26) [open] by skulidropek @ 2025-11-12T11:48:28.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#13 Чеки очень долго прогружаются (07:07) [closed] by skulidropek @ 2025-11-12T11:48:13.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#12 [Ключевое] что бы нормально работали чеки (07:01) [closed] by skulidropek @ 2025-11-12T11:47:56.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#11 Удалить галюцинации AI (Конфигурация: база знаний, обучение AI, оптимизация AI, дообучение AI, автоматизация, настройка) (06:42) [closed] by skulidropek @ 2025-11-12T11:47:35.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#10 Сделать добавление внутренних чатботов, что бы не перегружать нейронку (Сейчас сделано на системе sendler) (06:17) [open] by skulidropek @ 2025-11-12T11:47:20.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#9 Сделать что бы общалась нейронка в чате автоматически (5:10) [open] by skulidropek @ 2025-11-12T11:47:05.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#8 Сообщения оператора из ВК не подгружаются автоматически (02:37) (03:57) [open] by skulidropek @ 2025-11-12T11:46:54.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#7 Пользователь не должен тыкать на кнопку "Перезагрузки" для прогрузки сообщений (03:55) [open] by skulidropek @ 2025-11-12T11:46:38.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#6 Сообщения в диалогах подгружаются долго (02:17) [open] by skulidropek @ 2025-11-12T11:46:18.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#5 В диалогах всегда отображается одно сообщение, но на деле их больше (02:08) [open] by skulidropek @ 2025-11-12T11:45:30.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#4 Диалоги не грузятся моментально (00:45) [closed] by skulidropek @ 2025-11-12T11:40:42.000Z
+Labels: —
+Assignees: —
+Milestone: —
+---
+#3 Добавить возможность главному администратору добавлять уровень доступа к сервису [open] by ezocomp118-source @ 2025-11-12T11:37:01.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+
+Добавить возможность главному администратору добавлять уровни доступа к сервису, чтобы разные типы сотрудников имели доступ к разным блокам системы 
+
+<img width="444" height="513" alt="Image" src="https://github.com/user-attachments/assets/4a73f832-b81b-4bfc-a2f9-9099c94f494c" />
+---
+#2 Редактирование сообщений [open] by ezocomp118-source @ 2025-11-12T11:34:37.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+Добавить возможность редактировать сообещение, которое ушло от оператора / группы 
+
+<img width="691" height="340" alt="Image" src="https://github.com/user-attachments/assets/787523a8-7c37-4897-8dd3-869fa8c26070" />
+---
+#1 Исправить типобезопасность [closed] by skulidropek @ 2025-11-10T07:43:23.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+Везед явно должны быть указаны типы
+Не должно быть unkown или any
+---
+
+
+=== PULL REQUESTS ===
+PR #25 Fix/issue 11 [closed, merged] by skulidropek @ 2025-11-12T15:06:02.000Z
+Labels: —
+Assignees: —
+Milestone: —
+Body:
+#11 
+#24 
+---
+
+
+=== ISSUE COMMENTS ===
+skulidropek @ 2025-11-12T11:51:36.000Z on issue #21
+<img width="578" height="500" alt="Image" src="https://github.com/user-attachments/assets/d5594d76-0d82-4085-9593-b182657231bd" />
+---
+skulidropek @ 2025-11-12T15:07:13.000Z on issue #25
+<img width="1083" height="856" alt="image" src="https://github.com/user-attachments/assets/b4969793-0f28-4334-bd1b-b5c07efae0db" />
+
+---
+skulidropek @ 2025-11-12T18:31:32.000Z on issue #21
+<img width="1094" height="812" alt="Image" src="https://github.com/user-attachments/assets/4a4f5014-82c3-4537-99ba-7ab6d7df517f" />
+---
+skulidropek @ 2025-11-12T18:40:55.000Z on issue #26
+А | ezocomp, [12 Nov 2025 14:54:19]
+смотри 
+у нас базы от 100к человек 
+
+поэтому нужно под эти лимиты подстроиться
+
+А | ezocomp, [12 Nov 2025 14:54:24]
+и до миллиона человек
+---
+ezocomp118-source @ 2025-11-13T12:10:06.000Z on issue #13
+Сами чеки подгружаются
+Но проблема в том что бы он загружался быстрее (А не через пару часов)
+---
+ezocomp118-source @ 2025-11-13T12:12:55.000Z on issue #29
+в целом любые плашки удалять что бы не мешали
+---
+ezocomp118-source @ 2025-11-13T12:20:06.000Z on issue #34
+Взять за основу документацию sale bot
+---
+ezocomp118-source @ 2025-11-13T12:20:37.000Z on issue #34
+https://docs.salebot.pro/
+https://help.senler.ru/senler/
+https://help.mvpproject.io/
+---
+ezocomp118-source @ 2025-11-13T12:25:02.000Z on issue #37
+Система меток
+```
+utm_source 
+utm_medium
+utm_campaign 
+utm_content utm_term
+```
+---
+ezocomp118-source @ 2025-11-13T12:26:57.000Z on issue #8
+когда он только написал что бы сразу появилось на платформе
+---
+ezocomp118-source @ 2025-11-13T12:29:31.000Z on issue #39
+Сделать что бы сперва голосовое сообщение можно было прослушать перед тем как отправить пользователю
+---
+ezocomp118-source @ 2025-11-13T12:29:45.000Z on issue #39
+Максимально похожим образом что бы оно было на носителя
+---
+skulidropek @ 2025-11-17T18:44:20.000Z on issue #32
+<img width="803" height="717" alt="Image" src="https://github.com/user-attachments/assets/b93ee820-8774-46bc-8660-2a5ed28ca769" />
+---
+ezocomp118-source @ 2025-11-19T23:04:47.000Z on issue #41
+<img width="761" height="684" alt="Image" src="https://github.com/user-attachments/assets/cf1369dc-57cd-450c-b2f5-2a067d759cbd" />
+---
+ezocomp118-source @ 2025-11-25T06:16:28.000Z on issue #43
+<img width="1614" height="914" alt="Image" src="https://github.com/user-attachments/assets/41f399ae-7f19-479c-9e69-d0d5bcaae1bf" />
+---
+ezocomp118-source @ 2025-11-25T06:17:06.000Z on issue #13
+<img width="1614" height="914" alt="Image" src="https://github.com/user-attachments/assets/2fb15bfe-f385-4980-a74b-ae719727aa03" />
+---
+ezocomp118-source @ 2025-11-25T06:17:17.000Z on issue #12
+<img width="1614" height="914" alt="Image" src="https://github.com/user-attachments/assets/3bdff273-ecd6-4986-977e-52c10429c991" />
+---
+
+
+=== PR REVIEWS ===
+(no PR reviews)
+
+
+=== RELEASES ===
+(no releases)

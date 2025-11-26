@@ -1,0 +1,3 @@
+{"type":"meta","obj_type":"issue","repo":"ezocomp118-source/LeadForgeAI","number":39,"title":"Когда мы записываем голосовое сообщение что бы оно через EvenLabs автоматически перестраивало голос","state":"open","author":"ezocomp118-source","labels":[],"assignees":[],"milestone":null,"created_at":"2025-11-13T12:29:11Z","closed_at":null}
+{"type":"message","role":"participant","author":"ezocomp118-source","created_at":"2025-11-13T12:29:31Z","text":"Сделать что бы сперва голосовое сообщение можно было прослушать перед тем как отправить пользователю"}
+{"type":"message","role":"participant","author":"ezocomp118-source","created_at":"2025-11-13T12:29:45Z","text":"Максимально похожим образом что бы оно было на носителя"}
