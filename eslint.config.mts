@@ -7,6 +7,12 @@ import vitest from "eslint-plugin-vitest";
 import suggestMembers from "@ton-ai-core/eslint-plugin-suggest-members";
 import globals from "globals";
 import eslintCommentsConfigs from "@eslint-community/eslint-plugin-eslint-comments/configs";
+import sqlPlugin from "eslint-plugin-sql";
+import sqlTemplatePlugin from "eslint-plugin-sql-template";
+import { createSqlitePlugin } from "eslint-plugin-sqlite";
+import typeormTypescriptPlugin from "eslint-plugin-typeorm-typescript";
+
+const sqlitePlugin = createSqlitePlugin();
 
 export default defineConfig(
 	eslint.configs.recommended,
@@ -21,6 +27,12 @@ export default defineConfig(
 				projectService: true,
 				tsconfigRootDir: import.meta.dirname
 			}
+		},
+		plugins: {
+			sql: sqlPlugin,
+			"sql-template": sqlTemplatePlugin,
+			sqlite: sqlitePlugin,
+			"typeorm-typescript": typeormTypescriptPlugin
 		},
 		files: ["**/*.ts"],
 		rules: {
@@ -124,7 +136,38 @@ export default defineConfig(
 			"@typescript-eslint/only-throw-error": [
 				"error",
 				{ allowThrowingUnknown: false, allowThrowingAny: false }
-			]
+			],
+
+			// SQL safety and formatting
+			"sql/no-unsafe-query": [
+				"error",
+				{ allowLiteral: false, sqlTag: "sql" }
+			],
+			"sql/format": [
+				"warn",
+				{
+					ignoreExpressions: false,
+					ignoreInline: true,
+					ignoreStartWithNewLine: true,
+					ignoreTagless: true,
+					retainBaseIndent: true,
+					sqlTag: "sql"
+				},
+				{
+					keywordCase: "upper",
+					tabWidth: 2
+				}
+			],
+			"sql-template/no-unsafe-query": "error",
+			"sqlite/valid-query": "error",
+			"sqlite/typed-input": "error",
+			"sqlite/typed-result": "error",
+			"typeorm-typescript/enforce-column-types": [
+				"error",
+				{ driver: "postgres" }
+			],
+			"typeorm-typescript/enforce-consistent-nullability": "error",
+			"typeorm-typescript/enforce-relation-types": "error"
 		}
 	},
 	{
