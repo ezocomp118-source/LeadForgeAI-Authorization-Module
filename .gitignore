@@ -10,3 +10,24 @@ build
 coverage
 tmp
 *.log
+
+# Drizzle migrations output (generated)
+drizzle
+
+# TypeScript build info
+*.tsbuildinfo
+
+# IDE and editor files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
+
+# Test output
+test-results
+.nyc_output
+
+# OS files
+Thumbs.db
