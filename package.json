@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "tsx src/app/server.ts",
+		"dev:neon": "node scripts/run-dev-with-development-db.js",
 		"lint": "npx @ton-ai-core/vibecode-linter client/src",
 		"drizzle:generate": "drizzle-kit generate",
 		"drizzle:push": "drizzle-kit push"
