@@ -11,6 +11,12 @@ import {
 	postLogout,
 	postRegister,
 } from "./routes/auth.js";
+import {
+	confirmEmailVerification,
+	confirmPhoneVerification,
+	requestEmailVerification,
+	requestPhoneVerification,
+} from "./routes/verification.js";
 import { swaggerDocument } from "./swagger.js";
 
 /**
@@ -54,6 +60,22 @@ export const createApp = (): Express => {
 	app.post("/api/auth/login", postLogin);
 	app.post("/api/auth/logout", postLogout);
 	app.get("/api/auth/me", isAuthenticated, getMe);
+	app.post(
+		"/api/auth/email/verify/request",
+		isAuthenticated,
+		requestEmailVerification,
+	);
+	app.post("/api/auth/email/verify/confirm", confirmEmailVerification);
+	app.post(
+		"/api/auth/phone/verify/request",
+		isAuthenticated,
+		requestPhoneVerification,
+	);
+	app.post(
+		"/api/auth/phone/verify/confirm",
+		isAuthenticated,
+		confirmPhoneVerification,
+	);
 
 	return app;
 };

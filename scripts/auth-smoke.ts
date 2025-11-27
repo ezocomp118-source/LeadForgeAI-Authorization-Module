@@ -112,9 +112,19 @@ const insertInvitation = async (adminId: string, departmentId: string, positionI
 	return { token, invite };
 };
 
+const extractTokenFromUrl = (devVerifyUrl: string): string => {
+	try {
+		const url = new URL(devVerifyUrl);
+		return url.searchParams.get("token") ?? "";
+	} catch {
+		return "";
+	}
+};
+
 const main = async () => {
 	process.env["DATABASE_URL"] ??= DEVELOPMENT_DATABASE_URL;
 	process.env["SESSION_SECRET"] ??= "test-secret";
+	process.env["VERIFICATION_DEV_MODE"] ??= "true";
 
 	const adminId = await ensureAdminUser();
 	const org = await ensureDepartmentAndPosition();
@@ -145,6 +155,71 @@ const main = async () => {
 		jar
 	);
 
+	const emailRequestRes = await request(
+		baseUrl,
+		"/api/auth/email/verify/request",
+		{ method: "POST" },
+		jar
+	);
+
+	const invalidEmailConfirm = await request(
+		baseUrl,
+		"/api/auth/email/verify/confirm",
+		{
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ token: "invalid-token" })
+		},
+		jar
+	);
+
+	const emailToken = extractTokenFromUrl(
+		(emailRequestRes.body as { devVerifyUrl?: string })?.devVerifyUrl ?? ""
+	);
+
+	const emailConfirmRes = await request(
+		baseUrl,
+		"/api/auth/email/verify/confirm",
+		{
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ token: emailToken })
+		},
+		jar
+	);
+
+	const phoneRequestRes = await request(
+		baseUrl,
+		"/api/auth/phone/verify/request",
+		{ method: "POST" },
+		jar
+	);
+
+	const wrongPhoneConfirm = await request(
+		baseUrl,
+		"/api/auth/phone/verify/confirm",
+		{
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ code: "000000" })
+		},
+		jar
+	);
+
+	const phoneCode =
+		(phoneRequestRes.body as { devCode?: string })?.devCode ?? "";
+
+	const phoneConfirmRes = await request(
+		baseUrl,
+		"/api/auth/phone/verify/confirm",
+		{
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ code: phoneCode })
+		},
+		jar
+	);
+
 	await request(baseUrl, "/api/auth/logout", { method: "POST" }, jar);
 
 	const loginRes = await request(
@@ -160,7 +235,23 @@ const main = async () => {
 
 	server.close();
 
-	console.log(JSON.stringify({ registerRes, meRes, loginRes }, null, 2));
+	console.log(
+		JSON.stringify(
+			{
+				registerRes,
+				meRes,
+				emailRequestRes,
+				invalidEmailConfirm,
+				emailConfirmRes,
+				phoneRequestRes,
+				wrongPhoneConfirm,
+				phoneConfirmRes,
+				loginRes
+			},
+			null,
+			2
+		)
+	);
 };
 
 main().catch((err) => {

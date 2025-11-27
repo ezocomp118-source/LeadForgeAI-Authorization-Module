@@ -9,3 +9,4 @@ export * from "./people.ts";
 export * from "./projects.ts";
 export * from "./security.ts";
 export * from "./time.ts";
+export * from "./verification.ts";
