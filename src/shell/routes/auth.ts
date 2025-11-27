@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import bcrypt from "bcryptjs";
 import { eq, sql } from "drizzle-orm";
@@ -9,6 +9,7 @@ import {
 	registrationInvitations,
 	users,
 } from "../../core/schema/index.js";
+import { hashVerificationToken } from "../../core/verification.js";
 import { db } from "../db.js";
 import {
 	type InviteCandidate,
@@ -20,8 +21,7 @@ import {
 	validatePasswordPolicy,
 } from "./auth-helpers.js";
 
-const hashToken = (token: string): string =>
-	createHash("sha256").update(token).digest("hex");
+const hashToken = (token: string): string => hashVerificationToken(token);
 
 const generateToken = (): { token: string; tokenHash: string } => {
 	const token = randomBytes(32).toString("hex");
@@ -233,6 +233,8 @@ export const postLogin: RequestHandler = (req, res, next) => {
 				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName,
+				emailVerified: user.emailVerifiedAt !== null,
+				phoneVerified: user.phoneVerifiedAt !== null,
 			});
 			return user;
 		})
@@ -265,6 +267,8 @@ export const getMe: RequestHandler = (req, res, next) => {
 				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName,
+				emailVerified: user.emailVerifiedAt !== null,
+				phoneVerified: user.phoneVerifiedAt !== null,
 			});
 		})
 		.catch(next);
