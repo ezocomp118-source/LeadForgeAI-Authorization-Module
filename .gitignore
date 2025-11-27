@@ -24,6 +24,7 @@ drizzle
 !.vscode/launch.json
 !.vscode/extensions.json
 .idea
+.knowledge
 
 # Test output
 test-results
