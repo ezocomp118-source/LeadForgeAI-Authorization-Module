@@ -7,7 +7,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 
-import { users } from "./identity.ts";
+import { users } from "./identity.js";
 
 // CHANGE: Verification artifacts for email/phone with immutable hashes and attempt counters
 // WHY: Persist single-use tokens with TTL to support anti-bruteforce verification flows

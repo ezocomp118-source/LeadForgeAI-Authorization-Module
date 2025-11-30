@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"outDir": "dist",
+		"rootDir": "src",
+		"declaration": true,
+		"emitDeclarationOnly": false,
+		"allowImportingTsExtensions": false,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"target": "ES2022",
+		"noEmit": false
+	},
+	"include": ["src/core/schema/**/*", "src/core/schema/index.ts"],
+	"exclude": ["**/*.test.ts", "**/*.spec.ts"]
+}

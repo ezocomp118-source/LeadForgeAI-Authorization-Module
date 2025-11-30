@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Register with invitation</title>
+		<script type="module" crossorigin src="/assets/register-BIjXvQd4.js"></script>
+		<link rel="modulepreload" crossorigin href="/assets/styles-Byh3MCSL.js">
+		<link rel="stylesheet" crossorigin href="/assets/styles-7MbEsUcA.css">
+	</head>
+	<body>
+		<main class="register-page">
+			<header class="hero" style="margin-bottom: 8px;">
+				<div>
+					<p class="eyebrow">Authorization Module</p>
+					<h1>Complete registration</h1>
+					<p class="subtitle">
+						Use the invitation token you received to finish onboarding.
+					</p>
+				</div>
+			</header>
+			<form id="register-form" class="card" autocomplete="off">
+				<label class="full">
+					Invitation token
+					<input
+						id="register-token"
+						name="token"
+						type="text"
+						required
+						placeholder="paste token from invite"
+					/>
+				</label>
+				<label class="full">
+					Create password
+					<input
+						id="register-password"
+						name="password"
+						type="password"
+						required
+						placeholder="Min 12 chars, upper/lower/digit/symbol"
+					/>
+				</label>
+				<div class="stack full">
+					<button class="btn-primary" type="submit">Register</button>
+					<span class="muted">Tokens from <code>/register?token=</code> links auto-fill above.</span>
+				</div>
+				<div id="register-error" class="error hidden"></div>
+				<div id="register-success" class="success hidden">
+					You are in! Redirecting to the app…
+				</div>
+			</form>
+			<div class="notice">
+				Password policy: at least 12 characters including uppercase, lowercase, digit, and symbol.
+			</div>
+		</main>
+		<div id="toast-root"></div>
+	</body>
+</html>

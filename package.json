@@ -9,6 +9,7 @@
 		"build": "vite build",
 		"lint": "npx @ton-ai-core/vibecode-linter src",
 		"lint-frontend": "npx @ton-ai-core/vibecode-linter react-admin",
+		"build:schema": "tsc -p tsconfig.schema.json",
 		"test": "vitest run",
 		"drizzle:generate": "drizzle-kit generate",
 		"drizzle:push": "drizzle-kit push"

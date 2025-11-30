@@ -2,7 +2,6 @@
 # WHY: Prevent committing transient environment files and vendor directories
 # REF: REQ-REPO-HYGIENE
 node_modules
-dist
 build
 .DS_Store
 .env
