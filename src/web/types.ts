@@ -28,6 +28,7 @@ export type MeProfile = {
 	readonly email: string;
 	readonly firstName: string;
 	readonly lastName: string;
+	readonly profileImageUrl: string | null;
 };
 
 export type PasswordPolicyFlags = {

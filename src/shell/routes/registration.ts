@@ -134,6 +134,7 @@ const processRegistration = (
 				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName,
+				profileImageUrl: user.profileImageUrl ?? null,
 			});
 		});
 

@@ -170,16 +170,19 @@ export const decodeMe = (value: JsonValue): MeProfile | null => {
 		email?: JsonValue;
 		firstName?: JsonValue;
 		lastName?: JsonValue;
+		profileImageUrl?: JsonValue;
 	};
 	return isString(candidate.id) &&
 		isString(candidate.email) &&
 		isString(candidate.firstName) &&
-		isString(candidate.lastName)
+		isString(candidate.lastName) &&
+		isNullableString(candidate.profileImageUrl)
 		? {
 				id: candidate.id,
 				email: candidate.email,
 				firstName: candidate.firstName,
 				lastName: candidate.lastName,
+				profileImageUrl: candidate.profileImageUrl ?? null,
 			}
 		: null;
 };

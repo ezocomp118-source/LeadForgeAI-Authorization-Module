@@ -21,6 +21,24 @@ const respondError = (res: Response, status: number, error: string) => {
 	return null;
 };
 
+const toUserPayload = (user: {
+	id: string;
+	email: string;
+	firstName: string;
+	lastName: string;
+	profileImageUrl: string | null;
+	emailVerifiedAt: Date | null;
+	phoneVerifiedAt: Date | null;
+}) => ({
+	id: user.id,
+	email: user.email,
+	firstName: user.firstName,
+	lastName: user.lastName,
+	profileImageUrl: user.profileImageUrl ?? null,
+	emailVerified: user.emailVerifiedAt !== null,
+	phoneVerified: user.phoneVerifiedAt !== null,
+});
+
 const verifyPassword = (password: string, passwordHash: string): boolean =>
 	bcrypt.compareSync(password, passwordHash);
 
@@ -49,14 +67,7 @@ export const postLogin: RequestHandler = (req, res, next) => {
 				return respondError(res, 401, "invalid_credentials");
 			}
 			req.session.userId = user.id;
-			res.json({
-				id: user.id,
-				email: user.email,
-				firstName: user.firstName,
-				lastName: user.lastName,
-				emailVerified: user.emailVerifiedAt !== null,
-				phoneVerified: user.phoneVerifiedAt !== null,
-			});
+			res.json(toUserPayload(user));
 			return user;
 		})
 		.catch(next);
@@ -83,14 +94,7 @@ export const getMe: RequestHandler = (req, res, next) => {
 				res.status(404).json({ error: "user_not_found" });
 				return;
 			}
-			res.json({
-				id: user.id,
-				email: user.email,
-				firstName: user.firstName,
-				lastName: user.lastName,
-				emailVerified: user.emailVerifiedAt !== null,
-				phoneVerified: user.phoneVerifiedAt !== null,
-			});
+			res.json(toUserPayload(user));
 		})
 		.catch(next);
 };
