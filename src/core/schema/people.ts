@@ -48,6 +48,15 @@ export const registrationInvitations = pgTable(
 	{
 		id: uuid("id").defaultRandom().primaryKey(),
 		tokenHash: text("token_hash").notNull(),
+		// CHANGE: Persist raw token alongside hash for admin-side copy/link actions
+		// WHY: UI requirements demand re-sharing pending tokens without regenerating hashes
+		// QUOTE(ТЗ): "Действия: копировать токен (если pending)"
+		// REF: REQ-INVITES-UI
+		// FORMAT THEOREM: ∀invite ∈ Invitations: pending(invite) → tokenPlaintext(invite) ≠ null
+		// PURITY: CORE
+		// INVARIANT: tokenPlaintext length equals 64 hex chars for freshly issued invitations
+		// COMPLEXITY: O(1) storage
+		tokenPlaintext: text("token_plaintext"),
 		email: text("email").notNull(),
 		phone: text("phone").notNull(),
 		firstName: text("first_name").notNull(),
@@ -178,3 +187,4 @@ export type RegistrationInvitationRow =
 export type UserProfileRow = typeof userProfiles.$inferSelect;
 export type UserMessengerRow = typeof userMessengers.$inferSelect;
 export type EmploymentChangeRow = typeof employmentChangeLog.$inferSelect;
+export type InvitationStatus = (typeof invitationStatus.enumValues)[number];

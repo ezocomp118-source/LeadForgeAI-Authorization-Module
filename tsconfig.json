@@ -54,7 +54,11 @@
 		"target": "ES2022",
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
-		"lib": ["ES2022"],
+		// CHANGE: Add DOM lib to type-check browser UI without relaxing Node targets
+		// WHY: Frontend invitations/registration pages rely on DOM APIs alongside server code
+		// QUOTE(ТЗ): "Регистрационная форма в клиенте должна... показывать ошибки UI"
+		// REF: REQ-INVITES-UI
+		"lib": ["ES2022", "DOM"],
 
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
