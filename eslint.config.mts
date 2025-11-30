@@ -1,16 +1,19 @@
 // eslint.config.mjs
 // @ts-check
 import eslint from "@eslint/js";
-import { defineConfig } from "eslint/config";
-import tseslint from "typescript-eslint";
-import vitest from "eslint-plugin-vitest";
-import suggestMembers from "@ton-ai-core/eslint-plugin-suggest-members";
-import globals from "globals";
 import eslintCommentsConfigs from "@eslint-community/eslint-plugin-eslint-comments/configs";
+import suggestMembers from "@ton-ai-core/eslint-plugin-suggest-members";
+import jsxA11y from "eslint-plugin-jsx-a11y";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactPlugin from "eslint-plugin-react";
 import sqlPlugin from "eslint-plugin-sql";
 import sqlTemplatePlugin from "eslint-plugin-sql-template";
 import { createSqlitePlugin } from "eslint-plugin-sqlite";
 import typeormTypescriptPlugin from "eslint-plugin-typeorm-typescript";
+import vitest from "eslint-plugin-vitest";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import { defineConfig } from "eslint/config";
 
 const sqlitePlugin = createSqlitePlugin();
 
@@ -186,10 +189,38 @@ export default defineConfig(
 		}
 	},
 
-	// 3) Для JS-файлов отключим типо-зависимые проверки
+	// 4) React + JSX + a11y + hooks
 	{
-		files: ["**/*.{js,cjs,mjs}"],
-		extends: [tseslint.configs.disableTypeChecked]
+		files: [
+			"**/*.tsx",
+			"**/*.jsx",
+			"react-admin/**/*.{ts,tsx,jsx,js}"
+		],
+		plugins: {
+			react: reactPlugin,
+			"react-hooks": reactHooks,
+			"jsx-a11y": jsxA11y
+		},
+		languageOptions: {
+			parser: tseslint.parser,
+			parserOptions: {
+				projectService: true,
+				tsconfigRootDir: import.meta.dirname
+			},
+			globals: { ...globals.browser, ...globals.node }
+		},
+		settings: {
+			react: { version: "detect" }
+		},
+		rules: {
+			...reactPlugin.configs.recommended.rules,
+			...jsxA11y.configs.recommended.rules,
+			...reactHooks.configs.recommended.rules,
+			"react/react-in-jsx-scope": "off",
+			"react/prop-types": "off",
+			"react-hooks/rules-of-hooks": "error",
+			"react-hooks/exhaustive-deps": "error"
+		}
 	},
 
 	// 4) Глобальные игноры
