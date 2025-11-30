@@ -16,6 +16,7 @@ import tseslint from "typescript-eslint";
 import { defineConfig } from "eslint/config";
 
 const sqlitePlugin = createSqlitePlugin();
+const reactHooksPlugin = { meta: reactHooks.meta, rules: reactHooks.rules };
 
 export default defineConfig(
 	eslint.configs.recommended,
@@ -198,7 +199,7 @@ export default defineConfig(
 		],
 		plugins: {
 			react: reactPlugin,
-			"react-hooks": reactHooks,
+			"react-hooks": reactHooksPlugin,
 			"jsx-a11y": jsxA11y
 		},
 		languageOptions: {
