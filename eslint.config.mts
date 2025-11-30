@@ -215,11 +215,10 @@ export default defineConfig(
 		rules: {
 			...reactPlugin.configs.recommended.rules,
 			...jsxA11y.configs.recommended.rules,
-			...reactHooks.configs.recommended.rules,
-			"react/react-in-jsx-scope": "off",
-			"react/prop-types": "off",
 			"react-hooks/rules-of-hooks": "error",
-			"react-hooks/exhaustive-deps": "error"
+			"react-hooks/exhaustive-deps": "error",
+			"react/react-in-jsx-scope": "off",
+			"react/prop-types": "off"
 		}
 	},
 
