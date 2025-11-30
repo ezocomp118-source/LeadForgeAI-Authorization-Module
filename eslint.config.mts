@@ -34,7 +34,7 @@ export default defineConfig(
 			sqlite: sqlitePlugin,
 			"typeorm-typescript": typeormTypescriptPlugin
 		},
-		files: ["**/*.ts"],
+		files: ["src/**/*.ts", "src/**/*.tsx", "react-admin/**/*.ts", "react-admin/**/*.tsx"],
 		rules: {
 			complexity: ["error", 8],
 			"max-lines-per-function": [
