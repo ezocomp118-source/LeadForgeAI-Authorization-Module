@@ -52,6 +52,7 @@ export const users = pgTable("users", {
     phone: text("phone").notNull(),
     workEmail: text("work_email"),
     workPhone: text("work_phone"),
+    profileImageUrl: text("profile_image_url"),
     passwordHash: text("password_hash").notNull(),
     emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
     phoneVerifiedAt: timestamp("phone_verified_at", { withTimezone: true }),
