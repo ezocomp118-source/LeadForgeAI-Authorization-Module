@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import type { Filters } from "../../src/web/admin-types.js";
 import type { InvitationView, MeProfile } from "../../src/web/types.js";
@@ -38,7 +38,7 @@ const failure = <T>(prev: LoadState<T>, error: string): LoadState<T> => ({
 export const useMe = (loaders: DataLoaders) => {
 	const [state, setState] = useState<LoadState<MeProfile | null>>(initialMe);
 
-	const load = () => {
+	const load = useCallback(() => {
 		setState((prev) => startLoading(prev));
 		void Effect.runPromise(loaders.loadMe()).then((result) => {
 			setState((prev) =>
@@ -47,7 +47,7 @@ export const useMe = (loaders: DataLoaders) => {
 					: failure(prev, result.error),
 			);
 		});
-	};
+	}, [loaders]);
 
 	return { ...state, load };
 };
@@ -56,7 +56,7 @@ export const useInvitations = (loaders: DataLoaders, filters: Filters) => {
 	const [state, setState] =
 		useState<LoadState<ReadonlyArray<InvitationView>>>(initialInvites);
 
-	const reload = () => {
+	const reload = useCallback(() => {
 		setState((prev) => startLoading(prev));
 		void Effect.runPromise(loaders.loadInvitations(filters)).then((result) => {
 			setState((prev) =>
@@ -70,7 +70,7 @@ export const useInvitations = (loaders: DataLoaders, filters: Filters) => {
 					: failure(prev, result.error),
 			);
 		});
-	};
+	}, [filters, loaders]);
 
 	return { ...state, reload };
 };
