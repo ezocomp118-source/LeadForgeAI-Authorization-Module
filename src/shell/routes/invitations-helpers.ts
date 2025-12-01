@@ -2,6 +2,8 @@ import { randomBytes } from "node:crypto";
 
 import type { InvitationStatus } from "../../core/schema/index.js";
 import { hashVerificationToken } from "../../core/verification.js";
+import type { InvitationView } from "../../shared/invitations-types.js";
+export type { InvitationQuery } from "../../shared/invitations-types.js";
 
 export const DEFAULT_INVITE_EXPIRATION_HOURS = 72;
 
@@ -18,26 +20,6 @@ export type InvitationListRow = {
   readonly departmentName: string | null;
   readonly positionTitle: string | null;
   readonly invitedBy: string;
-};
-
-export type InvitationView = {
-  readonly id: string;
-  readonly email: string;
-  readonly firstName: string;
-  readonly lastName: string;
-  readonly department: string | null;
-  readonly position: string | null;
-  readonly status: InvitationStatus;
-  readonly expiresAt: string | null;
-  readonly createdAt: string | null;
-  readonly acceptedAt: string | null;
-  readonly invitedBy: string;
-  readonly token: string | null;
-};
-
-export type InvitationQuery = {
-  readonly status?: string | string[];
-  readonly email?: string | string[];
 };
 
 export type InvitationError = {

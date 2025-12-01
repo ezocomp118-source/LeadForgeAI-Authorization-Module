@@ -4,7 +4,6 @@ import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import * as Effect from "effect/Effect";
 import { pipe } from "effect/Function";
 import type { Request, Response } from "express";
-import { match } from "ts-pattern";
 
 import { users, type VerificationCodeRow, verificationCodes } from "../../core/schema/index.js";
 import {
@@ -14,6 +13,7 @@ import {
   type VerificationAttemptOutcome,
 } from "../../core/verification.js";
 import { db } from "../db.js";
+import { asDbError, type DbError, type ErrorCause } from "./db-error.js";
 import { config, verificationMessages, verificationRequiredMessage } from "./verification-config.js";
 
 export { config, verificationMessages, verificationRequiredMessage };
@@ -36,46 +36,6 @@ export type VerificationRequestResponse = {
 };
 
 export const now = (): Date => new Date();
-
-export type ErrorCause =
-  | Error
-  | { readonly message?: string }
-  | string
-  | number
-  | boolean
-  | bigint
-  | symbol
-  | null
-  | undefined;
-
-type DbError = { readonly _tag: "DbError"; readonly cause: Error };
-
-const hasMessage = (value: ErrorCause): value is { readonly message: string } =>
-  typeof value === "object"
-  && value !== null
-  && "message" in value
-  && typeof (value as { readonly message?: string }).message === "string";
-
-const serializeCause = (value: ErrorCause): string => {
-  if (
-    typeof value === "string"
-    || typeof value === "number"
-    || typeof value === "boolean"
-    || typeof value === "bigint"
-    || typeof value === "symbol"
-  ) {
-    return String(value);
-  }
-  const serialized = JSON.stringify(value);
-  return typeof serialized === "string" ? serialized : "unknown_error";
-};
-
-const asDbError = (cause: ErrorCause): DbError =>
-  cause instanceof Error
-    ? { _tag: "DbError", cause }
-    : hasMessage(cause)
-    ? { _tag: "DbError", cause: new Error(cause.message) }
-    : { _tag: "DbError", cause: new Error(serializeCause(cause)) };
 
 const tryDb = <A>(op: () => PromiseLike<A>): Effect.Effect<A, DbError> =>
   Effect.tryPromise({
@@ -294,27 +254,6 @@ export const extractRequestInfo = (
       ? req.headers["user-agent"]
       : null,
   }) satisfies Omit<RequestContext, "userId">;
-
-type InvalidOutcome = Extract<VerificationAttemptOutcome, { _tag: "Invalid" }>;
-
-export const handleOutcome = (
-  outcome: VerificationAttemptOutcome,
-  res: Response,
-  onInvalid: (invalid: InvalidOutcome) => Effect.Effect<void, DbError>,
-  onVerified: () => Effect.Effect<void, DbError>,
-): Effect.Effect<void, DbError> =>
-  match(outcome)
-    .with({ _tag: "Expired" }, () =>
-      Effect.sync(() => {
-        respondVerificationError(res, 400, "code_expired");
-      }))
-    .with({ _tag: "TooManyAttempts" }, () =>
-      Effect.sync(() => {
-        respondVerificationError(res, 400, "too_many_attempts");
-      }))
-    .with({ _tag: "Invalid" }, onInvalid)
-    .with({ _tag: "Verified" }, onVerified)
-    .exhaustive();
 
 export const generateEmailToken = (): { readonly token: string; readonly tokenHash: string } => {
   const token = randomBytes(32).toString("hex");

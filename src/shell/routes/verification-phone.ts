@@ -6,14 +6,20 @@ import { randomBytes } from "node:crypto";
 import { computeExpiresAt, hashVerificationToken } from "../../core/verification.js";
 import { db } from "../db.js";
 import {
+  confirmVerificationRecord,
+  enforceRateLimitOrRespond,
+  finalizeVerificationMark,
+  loadUserForVerification,
+  lookupLatestPhoneVerification,
+  respondVerificationSuccess,
+} from "./verification-flow.js";
+import {
   config,
   deactivateActiveCodes,
   ensureAuthenticated,
-  ensureRateLimit,
   ensureUserExists,
   evaluateOutcome,
   extractRequestInfo,
-  handleOutcome,
   insertVerificationCode,
   markPhoneVerified,
   now,
@@ -29,16 +35,6 @@ const generatePhoneCode = (): { readonly code: string; readonly codeHash: string
   const sixDigit = (randomValue % 900_000) + 100_000;
   const code = sixDigit.toString().padStart(6, "0");
   return { code, codeHash: hashVerificationToken(code) };
-};
-
-const respondAlreadyVerifiedPhone = (
-  res: Parameters<RequestHandler>[1],
-): void => {
-  res.status(200).json({
-    status: "ok",
-    alreadyVerified: true,
-    phoneVerified: true,
-  });
 };
 
 const buildPhoneInsertPayload = (
@@ -91,21 +87,7 @@ const confirmPhone = (
   res: Parameters<RequestHandler>[1],
   metadata: { readonly ip: string | null; readonly userAgent: string | null },
 ): Effect.Effect<void, VerificationDbError> =>
-  pipe(
-    markPhoneVerified(
-      record,
-      now(),
-      {
-        ...(metadata.ip ? { ip: metadata.ip } : {}),
-        ...(metadata.userAgent ? { userAgent: metadata.userAgent } : {}),
-      },
-    ),
-    Effect.tap(() =>
-      Effect.sync(() => {
-        res.status(200).json({ status: "ok", phoneVerified: true });
-      })
-    ),
-  );
+  finalizeVerificationMark((meta) => markPhoneVerified(record, now(), meta), metadata, res, "phoneVerified");
 
 const buildRequestPhoneProgram = (
   userId: string,
@@ -113,24 +95,16 @@ const buildRequestPhoneProgram = (
   ctx: ReturnType<typeof extractRequestInfo>,
 ): Effect.Effect<void, VerificationDbError> =>
   Effect.gen(function*(_) {
-    const user = yield* _(ensureUserExists(
-      runDbEffect(() =>
-        db.query.users.findFirst({
-          where: (tbl, { eq: eqFn }) => eqFn(tbl.id, userId),
-        })
-      ),
-      res,
-    ));
+    const user = yield* _(loadUserForVerification(userId, res));
     if (!user) {
       return;
     }
     if (user.phoneVerifiedAt) {
-      respondAlreadyVerifiedPhone(res);
+      yield* _(respondVerificationSuccess(res, { alreadyVerified: true, phoneVerified: true }));
       return;
     }
-    const rate = yield* _(ensureRateLimit(user.id, "phone"));
-    if (rate === "rate_limited") {
-      respondVerificationError(res, 429, "rate_limited");
+    const allowed = yield* _(enforceRateLimitOrRespond(user.id, "phone", res));
+    if (!allowed) {
       return;
     }
     const { code, codeHash } = generatePhoneCode();
@@ -159,44 +133,30 @@ const buildConfirmPhoneProgram = (
   res: Parameters<RequestHandler>[1],
   metadata: { readonly ip: string | null; readonly userAgent: string | null },
 ): Effect.Effect<void, VerificationDbError> =>
-  pipe(
-    runDbEffect(() =>
-      db.query.verificationCodes.findFirst({
-        where: (tbl, { and: andFn, eq: eqFn, isNull: isNullFn }) =>
-          andFn(
-            eqFn(tbl.userId, userId),
-            eqFn(tbl.type, "phone"),
-            isNullFn(tbl.usedAt),
-          ),
-        orderBy: (tbl, { desc: descFn }) => [descFn(tbl.createdAt)],
-      })
-    ),
-    Effect.flatMap((record) =>
-      record
-        ? handleOutcome(
-          evaluateOutcome(record, codeHash),
+  confirmVerificationRecord(
+    lookupLatestPhoneVerification(userId),
+    res,
+    (record) => evaluateOutcome(record, codeHash),
+    (record, outcome) => {
+      void outcome;
+      return pipe(
+        incrementPhoneAttempts(
+          record.id,
+          record.attempts + 1,
           res,
-          () =>
-            pipe(
-              incrementPhoneAttempts(
-                record.id,
-                record.attempts + 1,
-                res,
-                record.attempts + 1 >= record.maxAttempts,
-              ),
-            ),
-          () =>
-            confirmPhone(
-              record,
-              res,
-              {
-                ip: metadata.ip,
-                userAgent: metadata.userAgent,
-              },
-            ),
-        )
-        : respondInvalidPhoneCode(res)
-    ),
+          record.attempts + 1 >= record.maxAttempts,
+        ),
+      );
+    },
+    (record) =>
+      confirmPhone(
+        record,
+        res,
+        {
+          ip: metadata.ip,
+          userAgent: metadata.userAgent,
+        },
+      ),
   );
 
 export const confirmPhoneVerification: RequestHandler = (req, res, next) => {

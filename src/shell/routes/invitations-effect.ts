@@ -10,52 +10,12 @@ import {
 } from "../../core/schema/index.js";
 import { db } from "../db.js";
 import type { InvitePayload } from "./auth-helpers.js";
+import { asDbError, type DbError, type ErrorCause } from "./db-error.js";
 import type { InvitationListRow } from "./invitations-helpers.js";
 
-export type ErrorCause =
-  | Error
-  | { readonly message?: string }
-  | string
-  | number
-  | boolean
-  | bigint
-  | symbol
-  | null
-  | undefined;
-
-export type DbError = { readonly _tag: "DbError"; readonly cause: Error };
 export type MembershipRow = typeof departmentMemberships.$inferSelect;
 export type InvitationActionError = DbError | { readonly _tag: "InvitationNotFound" };
-
-const hasMessage = (value: ErrorCause): value is { readonly message: string } =>
-  typeof value === "object"
-  && value !== null
-  && "message" in value
-  && typeof (value as { readonly message?: string }).message === "string";
-
-const serializeCause = (value: ErrorCause): string => {
-  if (
-    typeof value === "string"
-    || typeof value === "number"
-    || typeof value === "boolean"
-    || typeof value === "bigint"
-    || typeof value === "symbol"
-  ) {
-    return String(value);
-  }
-  const serialized = JSON.stringify(value);
-  return typeof serialized === "string" ? serialized : "unknown_error";
-};
-
-const asDbError = (cause: ErrorCause): DbError => {
-  if (cause instanceof Error) {
-    return { _tag: "DbError", cause };
-  }
-  if (hasMessage(cause)) {
-    return { _tag: "DbError", cause: new Error(cause.message) };
-  }
-  return { _tag: "DbError", cause: new Error(serializeCause(cause)) };
-};
+export type { DbError } from "./db-error.js";
 
 export const fetchInvitations = (
   statusFilter: InvitationStatus | null,

@@ -14,10 +14,10 @@ import {
   type RegisterCandidate,
   validatePasswordPolicy,
 } from "./auth-helpers.js";
+import { asDbError, type DbError, type ErrorCause } from "./db-error.js";
+import { findUserByEmail, type UserRow } from "./user-queries.js";
 
-type DbError = { readonly _tag: "DbError"; readonly cause: Error };
 type InvitationRow = typeof registrationInvitations.$inferSelect;
-type UserRow = typeof users.$inferSelect;
 
 type RegisterRequestBody = RegisterCandidate | null | undefined;
 type RegisterError =
@@ -42,49 +42,6 @@ type RegistrationFlowError =
   | { readonly _tag: "UserExists" }
   | { readonly _tag: "UserCreationFailed" };
 
-type ErrorCause =
-  | Error
-  | { readonly message?: string }
-  | string
-  | number
-  | boolean
-  | bigint
-  | symbol
-  | null
-  | undefined;
-
-const hasMessage = (value: ErrorCause): value is { readonly message: string } =>
-  typeof value === "object"
-  && value !== null
-  && "message" in value
-  && typeof (value as { readonly message?: string }).message === "string";
-
-const serializeCause = (value: ErrorCause): string => {
-  if (
-    typeof value === "string"
-    || typeof value === "number"
-    || typeof value === "boolean"
-    || typeof value === "bigint"
-    || typeof value === "symbol"
-  ) {
-    return String(value);
-  }
-  const serialized = JSON.stringify(value);
-  return typeof serialized === "string" ? serialized : "unknown_error";
-};
-
-const toError = (cause: ErrorCause): Error =>
-  cause instanceof Error
-    ? cause
-    : hasMessage(cause)
-    ? new Error(cause.message)
-    : new Error(serializeCause(cause));
-
-const asDbError = (cause: ErrorCause): DbError => ({
-  _tag: "DbError",
-  cause: toError(cause),
-});
-
 const hashToken = (token: string): string => hashVerificationToken(token);
 
 const hashPassword = (password: string): string => bcrypt.hashSync(password, 10);
@@ -103,15 +60,6 @@ const findActiveInvitation = (
             eqFn(invites.status, "pending"),
             or(isNull(invites.expiresAt), gt(invites.expiresAt, sql`now()`)),
           ),
-      }),
-    catch: (cause) => asDbError(cause as ErrorCause),
-  });
-
-const findUserByEmail = (email: string): Effect.Effect<UserRow | undefined, DbError> =>
-  Effect.tryPromise({
-    try: () =>
-      db.query.users.findFirst({
-        where: (tbl, { eq: eqFn }) => eqFn(tbl.email, email),
       }),
     catch: (cause) => asDbError(cause as ErrorCause),
   });

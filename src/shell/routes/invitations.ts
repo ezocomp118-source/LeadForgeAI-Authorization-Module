@@ -6,6 +6,7 @@ import { match } from "ts-pattern";
 import type { departmentMemberships } from "../../core/schema/index.js";
 import { type InviteCandidate, parseInvite } from "./auth-helpers.js";
 import {
+  type DbError,
   fetchInvitations,
   findMembershipByUserId,
   insertInvitation,
@@ -31,6 +32,26 @@ const adminRoles: ReadonlyArray<MembershipRole> = [
   "admin",
   "manager",
 ];
+
+const forwardDbErrors = (
+  next: Parameters<RequestHandler>[2],
+): (effect: Effect.Effect<void, DbError>) => Effect.Effect<void> =>
+(effect) =>
+  pipe(
+    effect,
+    Effect.catchAll((err: { readonly cause: Error }) =>
+      Effect.sync(() => {
+        next(err.cause);
+      })
+    ),
+  );
+
+const runRouteProgram = (
+  program: Effect.Effect<void, DbError>,
+  next: Parameters<RequestHandler>[2],
+): void => {
+  void Effect.runPromise(program).catch(next);
+};
 
 // CHANGE: Admin guard through Effect with typed DB errors
 // WHY: Preserve pure core and explicit effect boundary
@@ -96,13 +117,9 @@ export const getInvitations: RequestHandler<
         res.json({ invitations });
       })
     ),
-    Effect.catchAll((err) =>
-      Effect.sync(() => {
-        next(err.cause);
-      })
-    ),
+    forwardDbErrors(next),
   );
-  Effect.runPromise(program).catch(next);
+  runRouteProgram(program, next);
 };
 
 export const postInvitation: RequestHandler = (req, res, next) => {
@@ -131,13 +148,9 @@ export const postInvitation: RequestHandler = (req, res, next) => {
           .json({ token, expiresAt: expirationDate.toISOString() });
       })
     ),
-    Effect.catchAll((err) =>
-      Effect.sync(() => {
-        next(err.cause);
-      })
-    ),
+    forwardDbErrors(next),
   );
-  Effect.runPromise(program).catch(next);
+  runRouteProgram(program, next);
 };
 
 // CHANGE: Invitation revocation without Promise chaining
@@ -177,5 +190,5 @@ export const revokeInvitation: RequestHandler = (req, res, next) => {
         .exhaustive()
     ),
   );
-  Effect.runPromise(program).catch(next);
+  runRouteProgram(program as Effect.Effect<void, DbError>, next);
 };

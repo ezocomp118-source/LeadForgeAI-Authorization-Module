@@ -4,22 +4,25 @@ import type { RequestHandler } from "express";
 import fetch from "node-fetch";
 
 import { computeExpiresAt, hashVerificationToken } from "../../core/verification.js";
-import { db } from "../db.js";
+import {
+  confirmVerificationRecord,
+  enforceRateLimitOrRespond,
+  finalizeVerificationMark,
+  loadUserForVerification,
+  lookupEmailVerification,
+  respondVerificationSuccess,
+} from "./verification-flow.js";
 import {
   config,
   deactivateActiveCodes,
   ensureAuthenticated,
-  ensureRateLimit,
-  ensureUserExists,
   evaluateOutcome,
   extractRequestInfo,
   generateEmailToken,
-  handleOutcome,
   insertVerificationCode,
   markEmailVerified,
   now,
   respondVerificationError,
-  runDbEffect,
   updateAttempts,
   type VerificationDbError,
   type VerificationRequestResponse,
@@ -57,17 +60,6 @@ const sendEmailVerification = (
     }),
   });
 
-const respondAlreadyVerifiedEmail = (
-  res: Parameters<RequestHandler>[1],
-): null => {
-  res.status(200).json({
-    status: "ok",
-    alreadyVerified: true,
-    emailVerified: true,
-  });
-  return null;
-};
-
 const respondInvalidEmailCode = (
   res: Parameters<RequestHandler>[1],
 ): Effect.Effect<void> =>
@@ -90,21 +82,7 @@ const confirmEmail = (
   res: Parameters<RequestHandler>[1],
   metadata: { readonly ip: string | null; readonly userAgent: string | null },
 ): Effect.Effect<void, VerificationDbError> =>
-  pipe(
-    markEmailVerified(
-      record,
-      now(),
-      {
-        ...(metadata.ip ? { ip: metadata.ip } : {}),
-        ...(metadata.userAgent ? { userAgent: metadata.userAgent } : {}),
-      },
-    ),
-    Effect.tap(() =>
-      Effect.sync(() => {
-        res.status(200).json({ status: "ok", emailVerified: true });
-      })
-    ),
-  );
+  finalizeVerificationMark((meta) => markEmailVerified(record, now(), meta), metadata, res, "emailVerified");
 
 const buildRequestEmailProgram = (
   userId: string,
@@ -112,24 +90,16 @@ const buildRequestEmailProgram = (
   ctx: ReturnType<typeof extractRequestInfo>,
 ): Effect.Effect<void, EmailSendError | VerificationDbError> =>
   Effect.gen(function*(_) {
-    const user = yield* _(ensureUserExists(
-      runDbEffect(() =>
-        db.query.users.findFirst({
-          where: (tbl, { eq: eqFn }) => eqFn(tbl.id, userId),
-        })
-      ),
-      res,
-    ));
+    const user = yield* _(loadUserForVerification(userId, res));
     if (!user) {
       return;
     }
     if (user.emailVerifiedAt) {
-      respondAlreadyVerifiedEmail(res);
+      yield* _(respondVerificationSuccess(res, { alreadyVerified: true, emailVerified: true }));
       return;
     }
-    const rate = yield* _(ensureRateLimit(user.id, "email"));
-    if (rate === "rate_limited") {
-      respondVerificationError(res, 429, "rate_limited");
+    const allowed = yield* _(enforceRateLimitOrRespond(user.id, "email", res));
+    if (!allowed) {
       return;
     }
     const { token, tokenHash } = generateEmailToken();
@@ -177,27 +147,15 @@ const buildConfirmEmailProgram = (
   res: Parameters<RequestHandler>[1],
   metadata: { readonly ip: string | null; readonly userAgent: string | null },
 ): Effect.Effect<void, VerificationDbError> =>
-  pipe(
-    runDbEffect(() =>
-      db.query.verificationCodes.findFirst({
-        where: (tbl, { and: andFn, eq: eqFn, isNull: isNullFn }) =>
-          andFn(
-            eqFn(tbl.tokenHash, tokenHash),
-            eqFn(tbl.type, "email"),
-            isNullFn(tbl.usedAt),
-          ),
-      })
-    ),
-    Effect.flatMap((record) =>
-      record
-        ? handleOutcome(
-          evaluateOutcome(record, tokenHash),
-          res,
-          () => incrementEmailAttempts(record.id, record.attempts + 1, res),
-          () => confirmEmail(record, res, metadata),
-        )
-        : respondInvalidEmailCode(res)
-    ),
+  confirmVerificationRecord(
+    lookupEmailVerification(tokenHash),
+    res,
+    (record) => evaluateOutcome(record, tokenHash),
+    (record, outcome) => {
+      void outcome;
+      return incrementEmailAttempts(record.id, record.attempts + 1, res);
+    },
+    (record) => confirmEmail(record, res, metadata),
   );
 
 export const confirmEmailVerification: RequestHandler = (req, res, next) => {
