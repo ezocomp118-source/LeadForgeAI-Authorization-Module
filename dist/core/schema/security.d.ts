@@ -2,9 +2,86 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
     name: "sessions";
     schema: undefined;
     columns: {
+        sid: import("drizzle-orm/pg-core").PgColumn<{
+            name: "sid";
+            tableName: "sessions";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: true;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
+        sess: import("drizzle-orm/pg-core").PgColumn<{
+            name: "sess";
+            tableName: "sessions";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: unknown;
+            driverParam: unknown;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        expire: import("drizzle-orm/pg-core").PgColumn<{
+            name: "expire";
+            tableName: "sessions";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        updatedAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "updated_at";
+            tableName: "sessions";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+export declare const authSessionAudits: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "auth_sessions_audit";
+    schema: undefined;
+    columns: {
         id: import("drizzle-orm/pg-core").PgColumn<{
             name: "id";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "string";
             columnType: "PgUUID";
             data: string;
@@ -19,9 +96,28 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
             identity: undefined;
             generated: undefined;
         }, {}, {}>;
+        sessionSid: import("drizzle-orm/pg-core").PgColumn<{
+            name: "session_sid";
+            tableName: "auth_sessions_audit";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
         userId: import("drizzle-orm/pg-core").PgColumn<{
             name: "user_id";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "string";
             columnType: "PgUUID";
             data: string;
@@ -38,7 +134,7 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
         }, {}, {}>;
         ipAddress: import("drizzle-orm/pg-core").PgColumn<{
             name: "ip_address";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "string";
             columnType: "PgText";
             data: string;
@@ -55,7 +151,7 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
         }, {}, {}>;
         city: import("drizzle-orm/pg-core").PgColumn<{
             name: "city";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "string";
             columnType: "PgText";
             data: string;
@@ -72,7 +168,7 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
         }, {}, {}>;
         country: import("drizzle-orm/pg-core").PgColumn<{
             name: "country";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "string";
             columnType: "PgText";
             data: string;
@@ -89,7 +185,7 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
         }, {}, {}>;
         userAgent: import("drizzle-orm/pg-core").PgColumn<{
             name: "user_agent";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "string";
             columnType: "PgText";
             data: string;
@@ -106,7 +202,7 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
         }, {}, {}>;
         issuedAt: import("drizzle-orm/pg-core").PgColumn<{
             name: "issued_at";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "date";
             columnType: "PgTimestamp";
             data: Date;
@@ -123,7 +219,7 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
         }, {}, {}>;
         expiresAt: import("drizzle-orm/pg-core").PgColumn<{
             name: "expires_at";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "date";
             columnType: "PgTimestamp";
             data: Date;
@@ -140,13 +236,30 @@ export declare const sessions: import("drizzle-orm/pg-core").PgTableWithColumns<
         }, {}, {}>;
         signedOutAt: import("drizzle-orm/pg-core").PgColumn<{
             name: "signed_out_at";
-            tableName: "sessions";
+            tableName: "auth_sessions_audit";
             dataType: "date";
             columnType: "PgTimestamp";
             data: Date;
             driverParam: string;
             notNull: false;
             hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        updatedAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "updated_at";
+            tableName: "auth_sessions_audit";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
@@ -268,4 +381,5 @@ export declare const securityAlerts: import("drizzle-orm/pg-core").PgTableWithCo
     dialect: "pg";
 }>;
 export type SessionRow = typeof sessions.$inferSelect;
+export type AuthSessionAuditRow = typeof authSessionAudits.$inferSelect;
 export type SecurityAlertRow = typeof securityAlerts.$inferSelect;

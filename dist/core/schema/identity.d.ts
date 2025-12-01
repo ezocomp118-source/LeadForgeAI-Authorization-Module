@@ -195,7 +195,7 @@ export declare const users: import("drizzle-orm/pg-core").PgTableWithColumns<{
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
+            hasDefault: true;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
@@ -212,7 +212,7 @@ export declare const users: import("drizzle-orm/pg-core").PgTableWithColumns<{
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
+            hasDefault: true;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
@@ -246,7 +246,7 @@ export declare const users: import("drizzle-orm/pg-core").PgTableWithColumns<{
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
+            hasDefault: true;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
@@ -359,6 +359,23 @@ export declare const users: import("drizzle-orm/pg-core").PgTableWithColumns<{
         }, {}, {}>;
         createdAt: import("drizzle-orm/pg-core").PgColumn<{
             name: "created_at";
+            tableName: "users";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        updatedAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "updated_at";
             tableName: "users";
             dataType: "date";
             columnType: "PgTimestamp";

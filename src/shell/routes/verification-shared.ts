@@ -185,8 +185,8 @@ const markVerifiedField = (
 			.update(users)
 			.set(
 				field === "emailVerifiedAt"
-					? { emailVerifiedAt: timestamp }
-					: { phoneVerifiedAt: timestamp },
+					? { emailVerifiedAt: timestamp, updatedAt: timestamp }
+					: { phoneVerifiedAt: timestamp, updatedAt: timestamp },
 			)
 			.where(eq(users.id, code.userId))
 			.then(() =>

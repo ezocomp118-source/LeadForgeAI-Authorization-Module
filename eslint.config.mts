@@ -9,6 +9,7 @@ import reactPlugin from "eslint-plugin-react";
 import sqlPlugin from "eslint-plugin-sql";
 import sqlTemplatePlugin from "eslint-plugin-sql-template";
 import { createSqlitePlugin } from "eslint-plugin-sqlite";
+import drizzle from "eslint-plugin-drizzle";
 import typeormTypescriptPlugin from "eslint-plugin-typeorm-typescript";
 import vitest from "eslint-plugin-vitest";
 import globals from "globals";
@@ -17,11 +18,20 @@ import { defineConfig } from "eslint/config";
 
 const sqlitePlugin = createSqlitePlugin();
 const reactHooksPlugin = { meta: reactHooks.meta, rules: reactHooks.rules };
+const drizzleFlatConfig = {
+	plugins: { drizzle },
+	languageOptions: {
+		ecmaVersion: 2024,
+		sourceType: "module",
+	},
+	rules: drizzle.configs.recommended.rules,
+};
 
 export default defineConfig(
 	eslint.configs.recommended,
 	tseslint.configs.strictTypeChecked,
 	suggestMembers.configs.recommended,
+	drizzleFlatConfig,
 	eslintCommentsConfigs.recommended,
 	{
 		languageOptions: {

@@ -65,10 +65,18 @@ export const positions = pgTable(
 
 export const users = pgTable("users", {
 	id: uuid("id").defaultRandom().primaryKey(),
-	firstName: text("first_name").notNull(),
-	lastName: text("last_name").notNull(),
+	// CHANGE: Normalize primary user fields to unified auth contract with defaults
+	// WHY: Align module-owned schema with consuming app expectations for empty-string defaults
+	// QUOTE(ТЗ): "Единый формат полей ... first_name ... default \"\" ... phone ... default \"\" ... updated_at"
+	// REF: AUTH-SCHEMA-UNIFY
+	// FORMAT THEOREM: ∀u ∈ Users: insert(u) → (u.firstName ≠ null ∧ u.lastName ≠ null ∧ u.phone ≠ null)
+	// PURITY: CORE
+	// INVARIANT: Names and phone are stored as total functions (never null) with deterministic defaults
+	// COMPLEXITY: O(1) per user row
+	firstName: text("first_name").notNull().default(""),
+	lastName: text("last_name").notNull().default(""),
 	email: text("email").notNull().unique(),
-	phone: text("phone").notNull(),
+	phone: text("phone").notNull().default(""),
 	workEmail: text("work_email"),
 	workPhone: text("work_phone"),
 	profileImageUrl: text("profile_image_url"),
@@ -76,6 +84,9 @@ export const users = pgTable("users", {
 	emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
 	phoneVerifiedAt: timestamp("phone_verified_at", { withTimezone: true }),
 	createdAt: timestamp("created_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
 		.notNull()
 		.defaultNow(),
 });
