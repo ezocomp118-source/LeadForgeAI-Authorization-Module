@@ -53,30 +53,32 @@ type ErrorCause =
   | null
   | undefined;
 
-const toError = (cause: ErrorCause): Error => {
-  if (cause instanceof Error) {
-    return cause;
-  }
+const hasMessage = (value: ErrorCause): value is { readonly message: string } =>
+  typeof value === "object"
+  && value !== null
+  && "message" in value
+  && typeof (value as { readonly message?: string }).message === "string";
+
+const serializeCause = (value: ErrorCause): string => {
   if (
-    typeof cause === "object"
-    && cause !== null
-    && "message" in cause
-    && typeof (cause as { readonly message?: string }).message === "string"
+    typeof value === "string"
+    || typeof value === "number"
+    || typeof value === "boolean"
+    || typeof value === "bigint"
+    || typeof value === "symbol"
   ) {
-    return new Error((cause as { readonly message: string }).message);
+    return String(value);
   }
-  if (
-    typeof cause === "string"
-    || typeof cause === "number"
-    || typeof cause === "boolean"
-    || typeof cause === "bigint"
-    || typeof cause === "symbol"
-  ) {
-    return new Error(String(cause));
-  }
-  const fallback = JSON.stringify(cause);
-  return new Error(typeof fallback === "string" ? fallback : "unknown_error");
+  const serialized = JSON.stringify(value);
+  return typeof serialized === "string" ? serialized : "unknown_error";
 };
+
+const toError = (cause: ErrorCause): Error =>
+  cause instanceof Error
+    ? cause
+    : hasMessage(cause)
+    ? new Error(cause.message)
+    : new Error(serializeCause(cause));
 
 const asDbError = (cause: ErrorCause): DbError => ({
   _tag: "DbError",

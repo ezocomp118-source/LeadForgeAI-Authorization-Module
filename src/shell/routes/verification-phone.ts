@@ -20,6 +20,7 @@ import {
   respondVerificationError,
   runDbEffect,
   updateAttempts,
+  type VerificationDbError,
   verificationRequiredMessage,
 } from "./verification-shared.js";
 
@@ -30,13 +31,88 @@ const generatePhoneCode = (): { readonly code: string; readonly codeHash: string
   return { code, codeHash: hashVerificationToken(code) };
 };
 
-export const requestPhoneVerification: RequestHandler = (req, res, next) => {
-  const userId = ensureAuthenticated(req, res);
-  if (!userId) {
-    return;
-  }
-  const ctx = extractRequestInfo(req);
-  const program = Effect.gen(function*(_) {
+const respondAlreadyVerifiedPhone = (
+  res: Parameters<RequestHandler>[1],
+): void => {
+  res.status(200).json({
+    status: "ok",
+    alreadyVerified: true,
+    phoneVerified: true,
+  });
+};
+
+const buildPhoneInsertPayload = (
+  user: { readonly id: string; readonly phone: string },
+  codeHash: string,
+  expiresAt: Date,
+  ctx: ReturnType<typeof extractRequestInfo>,
+): Parameters<typeof insertVerificationCode>[0] => ({
+  userId: user.id,
+  type: "phone" as const,
+  sentTo: user.phone,
+  tokenHash: codeHash,
+  expiresAt,
+  maxAttempts: config.phoneMaxAttempts,
+  requestedIp: ctx.ip,
+  requestedUserAgent: ctx.userAgent,
+  confirmedIp: null,
+  confirmedUserAgent: null,
+});
+
+const respondPhonePayload = (
+  res: Parameters<RequestHandler>[1],
+  code: string,
+): void => {
+  const payload = config.devMode ? { status: "ok", devCode: code } : { status: "ok" };
+  res.status(200).json(payload);
+};
+
+const respondInvalidPhoneCode = (
+  res: Parameters<RequestHandler>[1],
+  error: "code_invalid" | "too_many_attempts" = "code_invalid",
+): Effect.Effect<void> =>
+  Effect.sync(() => {
+    respondVerificationError(res, 400, error);
+  });
+
+const incrementPhoneAttempts = (
+  recordId: string,
+  attempts: number,
+  res: Parameters<RequestHandler>[1],
+  limitReached: boolean,
+): Effect.Effect<void, VerificationDbError> =>
+  pipe(
+    updateAttempts(recordId, attempts),
+    Effect.tap(() => respondInvalidPhoneCode(res, limitReached ? "too_many_attempts" : "code_invalid")),
+  );
+
+const confirmPhone = (
+  record: Parameters<typeof markPhoneVerified>[0],
+  res: Parameters<RequestHandler>[1],
+  metadata: { readonly ip: string | null; readonly userAgent: string | null },
+): Effect.Effect<void, VerificationDbError> =>
+  pipe(
+    markPhoneVerified(
+      record,
+      now(),
+      {
+        ...(metadata.ip ? { ip: metadata.ip } : {}),
+        ...(metadata.userAgent ? { userAgent: metadata.userAgent } : {}),
+      },
+    ),
+    Effect.tap(() =>
+      Effect.sync(() => {
+        res.status(200).json({ status: "ok", phoneVerified: true });
+      })
+    ),
+  );
+
+const buildRequestPhoneProgram = (
+  userId: string,
+  res: Parameters<RequestHandler>[1],
+  ctx: ReturnType<typeof extractRequestInfo>,
+): Effect.Effect<void, VerificationDbError> =>
+  Effect.gen(function*(_) {
     const user = yield* _(ensureUserExists(
       runDbEffect(() =>
         db.query.users.findFirst({
@@ -49,11 +125,7 @@ export const requestPhoneVerification: RequestHandler = (req, res, next) => {
       return;
     }
     if (user.phoneVerifiedAt) {
-      res.status(200).json({
-        status: "ok",
-        alreadyVerified: true,
-        phoneVerified: true,
-      });
+      respondAlreadyVerifiedPhone(res);
       return;
     }
     const rate = yield* _(ensureRateLimit(user.id, "phone"));
@@ -67,39 +139,27 @@ export const requestPhoneVerification: RequestHandler = (req, res, next) => {
       config.phoneTtlMinutes,
     );
     yield* _(deactivateActiveCodes(user.id, "phone"));
-    yield* _(insertVerificationCode({
-      userId: user.id,
-      type: "phone",
-      sentTo: user.phone,
-      tokenHash: codeHash,
-      expiresAt,
-      maxAttempts: config.phoneMaxAttempts,
-      requestedIp: ctx.ip,
-      requestedUserAgent: ctx.userAgent,
-      confirmedIp: null,
-      confirmedUserAgent: null,
-    }));
-    const payload = config.devMode
-      ? { status: "ok", devCode: code }
-      : { status: "ok" };
-    res.status(200).json(payload);
+    yield* _(insertVerificationCode(buildPhoneInsertPayload(user, codeHash, expiresAt, ctx)));
+    respondPhonePayload(res, code);
   });
-  Effect.runPromise(program).catch(next);
-};
 
-export const confirmPhoneVerification: RequestHandler = (req, res, next) => {
+export const requestPhoneVerification: RequestHandler = (req, res, next) => {
   const userId = ensureAuthenticated(req, res);
   if (!userId) {
     return;
   }
-  const { code } = req.body as { readonly code?: string };
-  if (typeof code !== "string" || code.trim().length === 0) {
-    res.status(400).json({ error: "invalid_payload" });
-    return;
-  }
-  const { ip, userAgent } = extractRequestInfo(req);
-  const codeHash = hashVerificationToken(code);
-  const program = pipe(
+  const ctx = extractRequestInfo(req);
+  const program = buildRequestPhoneProgram(userId, res, ctx);
+  Effect.runPromise(program).catch(next);
+};
+
+const buildConfirmPhoneProgram = (
+  userId: string,
+  codeHash: string,
+  res: Parameters<RequestHandler>[1],
+  metadata: { readonly ip: string | null; readonly userAgent: string | null },
+): Effect.Effect<void, VerificationDbError> =>
+  pipe(
     runDbEffect(() =>
       db.query.verificationCodes.findFirst({
         where: (tbl, { and: andFn, eq: eqFn, isNull: isNullFn }) =>
@@ -118,40 +178,40 @@ export const confirmPhoneVerification: RequestHandler = (req, res, next) => {
           res,
           () =>
             pipe(
-              updateAttempts(record.id, record.attempts + 1),
-              Effect.tap(() =>
-                Effect.sync(() => {
-                  const limitReached = record.attempts + 1 >= record.maxAttempts;
-                  respondVerificationError(
-                    res,
-                    400,
-                    limitReached ? "too_many_attempts" : "code_invalid",
-                  );
-                })
+              incrementPhoneAttempts(
+                record.id,
+                record.attempts + 1,
+                res,
+                record.attempts + 1 >= record.maxAttempts,
               ),
             ),
           () =>
-            pipe(
-              markPhoneVerified(
-                record,
-                now(),
-                {
-                  ...(ip ? { ip } : {}),
-                  ...(userAgent ? { userAgent } : {}),
-                },
-              ),
-              Effect.tap(() =>
-                Effect.sync(() => {
-                  res.status(200).json({ status: "ok", phoneVerified: true });
-                })
-              ),
+            confirmPhone(
+              record,
+              res,
+              {
+                ip: metadata.ip,
+                userAgent: metadata.userAgent,
+              },
             ),
         )
-        : Effect.sync(() => {
-          respondVerificationError(res, 400, "code_invalid");
-        })
+        : respondInvalidPhoneCode(res)
     ),
   );
+
+export const confirmPhoneVerification: RequestHandler = (req, res, next) => {
+  const userId = ensureAuthenticated(req, res);
+  if (!userId) {
+    return;
+  }
+  const { code } = req.body as { readonly code?: string };
+  if (typeof code !== "string" || code.trim().length === 0) {
+    res.status(400).json({ error: "invalid_payload" });
+    return;
+  }
+  const { ip, userAgent } = extractRequestInfo(req);
+  const codeHash = hashVerificationToken(code);
+  const program = buildConfirmPhoneProgram(userId, codeHash, res, { ip, userAgent });
   Effect.runPromise(program).catch(next);
 };
 

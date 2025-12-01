@@ -25,34 +25,36 @@ export type ErrorCause =
 
 export type DbError = { readonly _tag: "DbError"; readonly cause: Error };
 export type MembershipRow = typeof departmentMemberships.$inferSelect;
+export type InvitationActionError = DbError | { readonly _tag: "InvitationNotFound" };
 
-const asDbError = (cause: unknown): DbError => {
-  const candidate = cause as ErrorCause;
+const hasMessage = (value: ErrorCause): value is { readonly message: string } =>
+  typeof value === "object"
+  && value !== null
+  && "message" in value
+  && typeof (value as { readonly message?: string }).message === "string";
+
+const serializeCause = (value: ErrorCause): string => {
+  if (
+    typeof value === "string"
+    || typeof value === "number"
+    || typeof value === "boolean"
+    || typeof value === "bigint"
+    || typeof value === "symbol"
+  ) {
+    return String(value);
+  }
+  const serialized = JSON.stringify(value);
+  return typeof serialized === "string" ? serialized : "unknown_error";
+};
+
+const asDbError = (cause: ErrorCause): DbError => {
   if (cause instanceof Error) {
     return { _tag: "DbError", cause };
   }
-  if (
-    typeof candidate === "object"
-    && candidate !== null
-    && "message" in candidate
-    && typeof (candidate as { readonly message?: string }).message === "string"
-  ) {
-    return {
-      _tag: "DbError",
-      cause: new Error((candidate as { readonly message: string }).message),
-    };
+  if (hasMessage(cause)) {
+    return { _tag: "DbError", cause: new Error(cause.message) };
   }
-  const normalized = typeof candidate === "string"
-      || typeof candidate === "number"
-      || typeof candidate === "boolean"
-      || typeof candidate === "bigint"
-      || typeof candidate === "symbol"
-    ? String(candidate)
-    : (() => {
-      const serialized = JSON.stringify(candidate);
-      return typeof serialized === "string" ? serialized : "unknown_error";
-    })();
-  return { _tag: "DbError", cause: new Error(normalized) };
+  return { _tag: "DbError", cause: new Error(serializeCause(cause)) };
 };
 
 export const fetchInvitations = (
@@ -99,7 +101,7 @@ export const fetchInvitations = (
         : base;
       return scoped.orderBy(desc(registrationInvitations.createdAt));
     },
-    catch: asDbError,
+    catch: (cause) => asDbError(cause as ErrorCause),
   });
 
 export const findMembershipByUserId = (
@@ -110,7 +112,7 @@ export const findMembershipByUserId = (
       db.query.departmentMemberships.findFirst({
         where: (tbl, { eq: eqFn }) => eqFn(tbl.userId, userId),
       }),
-    catch: asDbError,
+    catch: (cause) => asDbError(cause as ErrorCause),
   });
 
 export const insertInvitation = (
@@ -137,14 +139,14 @@ export const insertInvitation = (
           expiresAt: expirationDate,
         })
         .onConflictDoNothing(),
-    catch: asDbError,
+    catch: (cause) => asDbError(cause as ErrorCause),
   });
 
 export const revokePendingInvitation = (
   id: string,
 ): Effect.Effect<
   { readonly id: string; readonly status: InvitationStatus; readonly revokedAt: Date | null },
-  DbError
+  InvitationActionError
 > =>
   Effect.tryPromise({
     try: () =>
@@ -162,14 +164,11 @@ export const revokePendingInvitation = (
           status: registrationInvitations.status,
           revokedAt: registrationInvitations.revokedAt,
         }),
-    catch: asDbError,
+    catch: (cause) => asDbError(cause as ErrorCause),
   }).pipe(
     Effect.flatMap((rows) =>
       rows[0]
         ? Effect.succeed(rows[0])
-        : Effect.fail<DbError>({
-          _tag: "DbError",
-          cause: new Error("not_found"),
-        })
+        : Effect.fail<InvitationActionError>({ _tag: "InvitationNotFound" })
     ),
   );

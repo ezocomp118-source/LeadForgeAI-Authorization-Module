@@ -21,6 +21,7 @@ import {
   respondVerificationError,
   runDbEffect,
   updateAttempts,
+  type VerificationDbError,
   type VerificationRequestResponse,
 } from "./verification-shared.js";
 
@@ -67,13 +68,50 @@ const respondAlreadyVerifiedEmail = (
   return null;
 };
 
-export const requestEmailVerification: RequestHandler = (req, res, next) => {
-  const userId = ensureAuthenticated(req, res);
-  if (!userId) {
-    return;
-  }
-  const ctx = extractRequestInfo(req);
-  const program = Effect.gen(function*(_) {
+const respondInvalidEmailCode = (
+  res: Parameters<RequestHandler>[1],
+): Effect.Effect<void> =>
+  Effect.sync(() => {
+    respondVerificationError(res, 400, "code_invalid");
+  });
+
+const incrementEmailAttempts = (
+  recordId: string,
+  attempts: number,
+  res: Parameters<RequestHandler>[1],
+): Effect.Effect<void, VerificationDbError> =>
+  pipe(
+    updateAttempts(recordId, attempts),
+    Effect.tap(() => respondInvalidEmailCode(res)),
+  );
+
+const confirmEmail = (
+  record: Parameters<typeof markEmailVerified>[0],
+  res: Parameters<RequestHandler>[1],
+  metadata: { readonly ip: string | null; readonly userAgent: string | null },
+): Effect.Effect<void, VerificationDbError> =>
+  pipe(
+    markEmailVerified(
+      record,
+      now(),
+      {
+        ...(metadata.ip ? { ip: metadata.ip } : {}),
+        ...(metadata.userAgent ? { userAgent: metadata.userAgent } : {}),
+      },
+    ),
+    Effect.tap(() =>
+      Effect.sync(() => {
+        res.status(200).json({ status: "ok", emailVerified: true });
+      })
+    ),
+  );
+
+const buildRequestEmailProgram = (
+  userId: string,
+  res: Parameters<RequestHandler>[1],
+  ctx: ReturnType<typeof extractRequestInfo>,
+): Effect.Effect<void, EmailSendError | VerificationDbError> =>
+  Effect.gen(function*(_) {
     const user = yield* _(ensureUserExists(
       runDbEffect(() =>
         db.query.users.findFirst({
@@ -116,6 +154,14 @@ export const requestEmailVerification: RequestHandler = (req, res, next) => {
       : { status: "ok" };
     res.status(200).json(payload);
   });
+
+export const requestEmailVerification: RequestHandler = (req, res, next) => {
+  const userId = ensureAuthenticated(req, res);
+  if (!userId) {
+    return;
+  }
+  const ctx = extractRequestInfo(req);
+  const program = buildRequestEmailProgram(userId, res, ctx);
   Effect.runPromise(program).catch((error) => {
     const candidate = error as { readonly cause?: Error };
     if (candidate.cause instanceof Error) {
@@ -126,15 +172,12 @@ export const requestEmailVerification: RequestHandler = (req, res, next) => {
   });
 };
 
-export const confirmEmailVerification: RequestHandler = (req, res, next) => {
-  const { token } = req.body as { readonly token?: string };
-  if (typeof token !== "string" || token.trim().length === 0) {
-    res.status(400).json({ error: "invalid_payload" });
-    return;
-  }
-  const { ip, userAgent } = extractRequestInfo(req);
-  const tokenHash = hashVerificationToken(token);
-  const program = pipe(
+const buildConfirmEmailProgram = (
+  tokenHash: string,
+  res: Parameters<RequestHandler>[1],
+  metadata: { readonly ip: string | null; readonly userAgent: string | null },
+): Effect.Effect<void, VerificationDbError> =>
+  pipe(
     runDbEffect(() =>
       db.query.verificationCodes.findFirst({
         where: (tbl, { and: andFn, eq: eqFn, isNull: isNullFn }) =>
@@ -150,36 +193,21 @@ export const confirmEmailVerification: RequestHandler = (req, res, next) => {
         ? handleOutcome(
           evaluateOutcome(record, tokenHash),
           res,
-          () =>
-            pipe(
-              updateAttempts(record.id, record.attempts + 1),
-              Effect.tap(() =>
-                Effect.sync(() => {
-                  respondVerificationError(res, 400, "code_invalid");
-                })
-              ),
-            ),
-          () =>
-            pipe(
-              markEmailVerified(
-                record,
-                now(),
-                {
-                  ...(ip ? { ip } : {}),
-                  ...(userAgent ? { userAgent } : {}),
-                },
-              ),
-              Effect.tap(() =>
-                Effect.sync(() => {
-                  res.status(200).json({ status: "ok", emailVerified: true });
-                })
-              ),
-            ),
+          () => incrementEmailAttempts(record.id, record.attempts + 1, res),
+          () => confirmEmail(record, res, metadata),
         )
-        : Effect.sync(() => {
-          respondVerificationError(res, 400, "code_invalid");
-        })
+        : respondInvalidEmailCode(res)
     ),
   );
+
+export const confirmEmailVerification: RequestHandler = (req, res, next) => {
+  const { token } = req.body as { readonly token?: string };
+  if (typeof token !== "string" || token.trim().length === 0) {
+    res.status(400).json({ error: "invalid_payload" });
+    return;
+  }
+  const { ip, userAgent } = extractRequestInfo(req);
+  const tokenHash = hashVerificationToken(token);
+  const program = buildConfirmEmailProgram(tokenHash, res, { ip, userAgent });
   Effect.runPromise(program).catch(next);
 };

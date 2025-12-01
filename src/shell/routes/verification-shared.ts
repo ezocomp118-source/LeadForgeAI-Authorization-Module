@@ -16,6 +16,8 @@ import {
 import { db } from "../db.js";
 import { config, verificationMessages, verificationRequiredMessage } from "./verification-config.js";
 
+export { config, verificationMessages, verificationRequiredMessage };
+
 export type VerificationErrorCode =
   | "code_invalid"
   | "code_expired"
@@ -48,42 +50,37 @@ export type ErrorCause =
 
 type DbError = { readonly _tag: "DbError"; readonly cause: Error };
 
-const asDbError = (cause: unknown): DbError => {
-  const candidate = cause as ErrorCause;
-  if (cause instanceof Error) {
-    return { _tag: "DbError", cause };
-  }
+const hasMessage = (value: ErrorCause): value is { readonly message: string } =>
+  typeof value === "object"
+  && value !== null
+  && "message" in value
+  && typeof (value as { readonly message?: string }).message === "string";
+
+const serializeCause = (value: ErrorCause): string => {
   if (
-    typeof candidate === "object"
-    && candidate !== null
-    && "message" in candidate
-    && typeof (candidate as { readonly message?: string }).message === "string"
+    typeof value === "string"
+    || typeof value === "number"
+    || typeof value === "boolean"
+    || typeof value === "bigint"
+    || typeof value === "symbol"
   ) {
-    return {
-      _tag: "DbError",
-      cause: new Error((candidate as { readonly message: string }).message),
-    };
+    return String(value);
   }
-  let normalized: string;
-  if (
-    typeof candidate === "string"
-    || typeof candidate === "number"
-    || typeof candidate === "boolean"
-    || typeof candidate === "bigint"
-    || typeof candidate === "symbol"
-  ) {
-    normalized = String(candidate);
-  } else {
-    const serialized = JSON.stringify(candidate);
-    normalized = typeof serialized === "string" ? serialized : "unknown_error";
-  }
-  return { _tag: "DbError", cause: new Error(normalized) };
+  const serialized = JSON.stringify(value);
+  return typeof serialized === "string" ? serialized : "unknown_error";
 };
+
+const asDbError = (cause: ErrorCause): DbError =>
+  cause instanceof Error
+    ? { _tag: "DbError", cause }
+    : hasMessage(cause)
+    ? { _tag: "DbError", cause: new Error(cause.message) }
+    : { _tag: "DbError", cause: new Error(serializeCause(cause)) };
 
 const tryDb = <A>(op: () => PromiseLike<A>): Effect.Effect<A, DbError> =>
   Effect.tryPromise({
     try: op,
-    catch: asDbError,
+    catch: (cause) => asDbError(cause as ErrorCause),
   });
 
 export type VerificationDbError = DbError;

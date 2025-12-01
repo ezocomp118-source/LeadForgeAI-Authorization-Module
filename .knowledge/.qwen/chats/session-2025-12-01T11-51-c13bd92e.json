@@ -1,0 +1,94 @@
+{
+  "sessionId": "c13bd92e-8503-4d7e-9526-40826c34f407",
+  "projectHash": "6dba6b74572ae33315e920e0f8b140be894fa31def8e2a022948fa1a2ac34946",
+  "startTime": "2025-12-01T11:51:44.607Z",
+  "lastUpdated": "2025-12-01T11:52:15.043Z",
+  "messages": [
+    {
+      "id": "f10b5ca6-b2fa-4b38-968d-00e4b203a3c7",
+      "timestamp": "2025-12-01T11:51:44.607Z",
+      "type": "user",
+      "content": "Комить весь код"
+    },
+    {
+      "id": "5e7112bd-4a23-406d-b0ff-ae5b8a268e5f",
+      "timestamp": "2025-12-01T11:51:51.564Z",
+      "type": "qwen",
+      "content": "I'll help you commit all the code in the repository. Let me first check the current status of the repository to see what files are staged, modified, or untracked.",
+      "thoughts": [],
+      "tokens": {
+        "input": 12262,
+        "output": 69,
+        "cached": 11958,
+        "thoughts": 0,
+        "tool": 0,
+        "total": 12331
+      },
+      "model": "coder-model"
+    },
+    {
+      "id": "176dd361-70d0-40a5-b653-356f3fb22651",
+      "timestamp": "2025-12-01T11:51:54.914Z",
+      "type": "qwen",
+      "content": "I can see there are several modified files that need to be committed. Let me stage all the changes and then create a commit with a descriptive message.",
+      "thoughts": [],
+      "tokens": {
+        "input": 12590,
+        "output": 64,
+        "cached": 12258,
+        "thoughts": 0,
+        "tool": 0,
+        "total": 12654
+      },
+      "model": "coder-model"
+    },
+    {
+      "id": "2abf905f-8270-4436-9aa1-d5fda673df9b",
+      "timestamp": "2025-12-01T11:52:01.414Z",
+      "type": "qwen",
+      "content": "Now that all changes are staged, let me create a comprehensive commit message that describes all the changes being committed.",
+      "thoughts": [],
+      "tokens": {
+        "input": 12719,
+        "output": 56,
+        "cached": 12586,
+        "thoughts": 0,
+        "tool": 0,
+        "total": 12775
+      },
+      "model": "coder-model"
+    },
+    {
+      "id": "b4731ec9-eaf7-4f53-9e16-760c84ee86eb",
+      "timestamp": "2025-12-01T11:52:09.590Z",
+      "type": "qwen",
+      "content": "Let me check the specific changes that have been made to understand what we're committing:",
+      "thoughts": [],
+      "tokens": {
+        "input": 12997,
+        "output": 56,
+        "cached": 12715,
+        "thoughts": 0,
+        "tool": 0,
+        "total": 13053
+      },
+      "model": "coder-model"
+    },
+    {
+      "id": "b15e54cc-7934-40b3-8628-652170522edd",
+      "timestamp": "2025-12-01T11:52:15.043Z",
+      "type": "qwen",
+      "content": "Now I'll create a detailed commit that captures all these changes. Let me commit with a descriptive message:",
+      "thoughts": [],
+      "tokens": {
+        "input": 13201,
+        "output": 132,
+        "cached": 12993,
+        "thoughts": 0,
+        "tool": 0,
+        "total": 13333
+      },
+      "model": "coder-model"
+    }
+  ]
+}

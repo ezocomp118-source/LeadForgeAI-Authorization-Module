@@ -40,6 +40,58 @@ const requestPath = (
   },
 });
 
+const confirmRequestBody = (
+  field: "token" | "code",
+): {
+  readonly required: true;
+  readonly content: {
+    readonly "application/json": {
+      readonly schema: {
+        readonly type: "object";
+        readonly required: readonly string[];
+        readonly properties: Record<string, { readonly type: "string" }>;
+      };
+    };
+  };
+} => ({
+  required: true,
+  content: {
+    "application/json": {
+      schema: {
+        type: "object",
+        required: [field],
+        properties: {
+          [field]: { type: "string" },
+        },
+      },
+    },
+  },
+});
+
+const confirmResponses = (
+  successDescription: string,
+  invalidDescription: string,
+): { readonly 200: VerificationResponseBody; readonly 400: VerificationResponseBody } => ({
+  200: {
+    description: successDescription,
+    content: {
+      "application/json": {
+        schema: {
+          $ref: "#/components/schemas/VerificationConfirmResponse",
+        },
+      },
+    },
+  },
+  400: {
+    description: invalidDescription,
+    content: {
+      "application/json": {
+        schema: { $ref: "#/components/schemas/VerificationError" },
+      },
+    },
+  },
+});
+
 const confirmPath = (
   summary: string,
   field: "token" | "code",
@@ -48,60 +100,14 @@ const confirmPath = (
 ): {
   readonly post: {
     readonly summary: string;
-    readonly requestBody: {
-      readonly required: true;
-      readonly content: {
-        readonly "application/json": {
-          readonly schema: {
-            readonly type: "object";
-            readonly required: readonly string[];
-            readonly properties: Record<string, { readonly type: "string" }>;
-          };
-        };
-      };
-    };
-    readonly responses: {
-      readonly 200: VerificationResponseBody;
-      readonly 400: VerificationResponseBody;
-    };
+    readonly requestBody: ReturnType<typeof confirmRequestBody>;
+    readonly responses: ReturnType<typeof confirmResponses>;
   };
 } => ({
   post: {
     summary,
-    requestBody: {
-      required: true,
-      content: {
-        "application/json": {
-          schema: {
-            type: "object",
-            required: [field],
-            properties: {
-              [field]: { type: "string" },
-            },
-          },
-        },
-      },
-    },
-    responses: {
-      200: {
-        description: successDescription,
-        content: {
-          "application/json": {
-            schema: {
-              $ref: "#/components/schemas/VerificationConfirmResponse",
-            },
-          },
-        },
-      },
-      400: {
-        description: invalidDescription,
-        content: {
-          "application/json": {
-            schema: { $ref: "#/components/schemas/VerificationError" },
-          },
-        },
-      },
-    },
+    requestBody: confirmRequestBody(field),
+    responses: confirmResponses(successDescription, invalidDescription),
   },
 });
 
