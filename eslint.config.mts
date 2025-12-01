@@ -52,6 +52,9 @@ export default defineConfig(
 		},
 		files: ["**/*.ts", "**/*.tsx"],
 		rules: {
+			"@typescript-eslint/explicit-function-return-type": "error",
+			"@typescript-eslint/explicit-module-boundary-types": "error",
+			"@typescript-eslint/no-explicit-any": "error",
 			"effect/dprint": "error",
 			"effect/no-import-from-barrel-package": "error",
 			complexity: ["error", 8],
