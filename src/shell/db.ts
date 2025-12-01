@@ -17,7 +17,9 @@ type DbEnv = NodeJS.ProcessEnv & { readonly DATABASE_URL?: string };
 const { DATABASE_URL: databaseUrl } = process.env as DbEnv;
 const effectDatabaseUrl: string = databaseUrl ?? DEVELOPMENT_DATABASE_URL;
 
-const resolveSsl = (url: string | undefined) => {
+const resolveSsl = (
+  url: string | undefined,
+): boolean | { readonly rejectUnauthorized: boolean } => {
   if (!url) {
     return { rejectUnauthorized: false };
   }

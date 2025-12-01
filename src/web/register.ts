@@ -133,7 +133,7 @@ const isApiError = (
   && "_tag" in (error as Record<string, JsonValue>)
   && typeof (error as { _tag?: JsonValue })._tag === "string";
 
-const handleSubmit = (event: SubmitEvent) => {
+const handleSubmit = (event: SubmitEvent): void => {
   event.preventDefault();
   const token = tokenInput.value.trim();
   const password = passwordInput.value;
@@ -162,14 +162,14 @@ const handleSubmit = (event: SubmitEvent) => {
     });
 };
 
-const prefillToken = () => {
+const prefillToken = (): void => {
   const token = new URLSearchParams(window.location.search).get("token");
   if (token && isString(token)) {
     tokenInput.value = token;
   }
 };
 
-const bootstrap = () => {
+const bootstrap = (): void => {
   prefillToken();
   registerForm.addEventListener("submit", handleSubmit);
 };

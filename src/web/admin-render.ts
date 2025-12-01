@@ -11,7 +11,7 @@ export type AdminElements = {
   readonly userBadge: HTMLDivElement;
 };
 
-const createStatusBadge = (status: InvitationStatus) => {
+const createStatusBadge = (status: InvitationStatus): HTMLSpanElement => {
   const badge = document.createElement("span");
   badge.className = `status ${status}`;
   badge.textContent = status;
@@ -39,7 +39,7 @@ const createActionButton = (
   return button;
 };
 
-const createActionsCell = (invite: InvitationView) => {
+const createActionsCell = (invite: InvitationView): HTMLTableCellElement => {
   const cell = document.createElement("td");
   if (invite.status !== "pending") {
     cell.textContent = "—";
@@ -63,10 +63,16 @@ const createActionsCell = (invite: InvitationView) => {
   return cell;
 };
 
+const createStatusCell = (status: InvitationStatus): HTMLTableCellElement => {
+  const td = document.createElement("td");
+  td.append(createStatusBadge(status));
+  return td;
+};
+
 export const renderLatestInvite = (
   latest: CreateInvitationResponse | null,
   elements: AdminElements,
-) => {
+): void => {
   if (!latest) {
     elements.inviteSuccess.classList.add("hidden");
     return;
@@ -76,7 +82,10 @@ export const renderLatestInvite = (
   elements.inviteSuccess.classList.remove("hidden");
 };
 
-export const renderUserBadge = (state: AdminState, elements: AdminElements) => {
+export const renderUserBadge = (
+  state: AdminState,
+  elements: AdminElements,
+): void => {
   elements.userBadge.textContent = state.me
     ? `${state.me.firstName} ${state.me.lastName}`
     : "Not authenticated";
@@ -85,7 +94,7 @@ export const renderUserBadge = (state: AdminState, elements: AdminElements) => {
 export const renderInvitations = (
   invitations: ReadonlyArray<InvitationView>,
   elements: AdminElements,
-) => {
+): void => {
   if (invitations.length === 0) {
     elements.invitesEmpty.classList.remove("hidden");
     elements.invitesBody.replaceChildren();
@@ -107,11 +116,7 @@ export const renderInvitations = (
       Object.assign(document.createElement("td"), {
         textContent: invite.position ?? "—",
       }),
-      (() => {
-        const td = document.createElement("td");
-        td.append(createStatusBadge(invite.status));
-        return td;
-      })(),
+      createStatusCell(invite.status),
       Object.assign(document.createElement("td"), {
         textContent: formatDate(invite.expiresAt),
       }),

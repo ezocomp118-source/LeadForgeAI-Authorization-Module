@@ -1,4 +1,15 @@
-const verificationRequestResponses = {
+type VerificationResponseBody = {
+  readonly description: string;
+  readonly content?: {
+    readonly "application/json": { readonly schema: { readonly $ref: string } };
+  };
+};
+
+const verificationRequestResponses: {
+  readonly 200: VerificationResponseBody;
+  readonly 401: VerificationResponseBody;
+  readonly 429: VerificationResponseBody;
+} = {
   200: {
     description: "Issued verification token",
     content: {
@@ -20,7 +31,9 @@ const verificationRequestResponses = {
   },
 };
 
-const requestPath = (summary: string) => ({
+const requestPath = (
+  summary: string,
+): { readonly post: { readonly summary: string; readonly responses: typeof verificationRequestResponses } } => ({
   post: {
     summary,
     responses: verificationRequestResponses,
@@ -32,7 +45,27 @@ const confirmPath = (
   field: "token" | "code",
   successDescription: string,
   invalidDescription: string,
-) => ({
+): {
+  readonly post: {
+    readonly summary: string;
+    readonly requestBody: {
+      readonly required: true;
+      readonly content: {
+        readonly "application/json": {
+          readonly schema: {
+            readonly type: "object";
+            readonly required: readonly string[];
+            readonly properties: Record<string, { readonly type: "string" }>;
+          };
+        };
+      };
+    };
+    readonly responses: {
+      readonly 200: VerificationResponseBody;
+      readonly 400: VerificationResponseBody;
+    };
+  };
+} => ({
   post: {
     summary,
     requestBody: {

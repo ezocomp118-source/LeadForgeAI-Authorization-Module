@@ -65,7 +65,7 @@ const isApiError = (
 const handleLoadError = (
   error: ApiError | JsonValue | undefined,
   target: HTMLElement,
-) => {
+): void => {
   if (!isApiError(error)) {
     setInlineError(target, "Unexpected error");
     return;
@@ -75,7 +75,7 @@ const handleLoadError = (
   showToast(toastRoot, message, "error");
 };
 
-const renderLatest = (latest: CreateInvitationResponse | null) => {
+const renderLatest = (latest: CreateInvitationResponse | null): void => {
   renderLatestInvite(latest, elements);
   if (latest) {
     const tokenDataset = copyCreatedToken.dataset as { token?: string };
@@ -88,8 +88,8 @@ const renderLatest = (latest: CreateInvitationResponse | null) => {
   delete (copyCreatedLink.dataset as { token?: string }).token;
 };
 
-const loadInvitations = () =>
-  Effect.runPromise(getJson("/api/invitations", decodeInvitationsResponse))
+const loadInvitations = (): void => {
+  void Effect.runPromise(getJson("/api/invitations", decodeInvitationsResponse))
     .then((response) => {
       state.invitations = response.invitations;
       setInlineError(tableError, null);
@@ -101,9 +101,10 @@ const loadInvitations = () =>
     .catch((error: ApiError | JsonValue | undefined) => {
       handleLoadError(error, tableError);
     });
+};
 
-const loadCurrentUser = () =>
-  Effect.runPromise(getJson("/api/auth/me", decodeMe))
+const loadCurrentUser = (): void => {
+  void Effect.runPromise(getJson("/api/auth/me", decodeMe))
     .then((profile) => {
       state.me = profile;
       renderUserBadge(state, elements);
@@ -120,6 +121,7 @@ const loadCurrentUser = () =>
       }
       handleLoadError(error, elements.userBadge);
     });
+};
 
 const buildInvitePayload = (
   formData: FormData,
@@ -163,8 +165,8 @@ const buildInvitePayload = (
   };
 };
 
-const submitInvitation = (payload: Record<string, string | number>) =>
-  Effect.runPromise(
+const submitInvitation = (payload: Record<string, string | number>): void => {
+  void Effect.runPromise(
     postJson("/api/invitations", payload, decodeCreateInvitationResponse),
   )
     .then((response) => {
@@ -172,7 +174,7 @@ const submitInvitation = (payload: Record<string, string | number>) =>
       renderLatest(state.latest);
       setInlineError(inviteError, null);
       showToast(toastRoot, "Invitation issued", "success");
-      return loadInvitations();
+      loadInvitations();
     })
     .catch((error: ApiError | JsonValue | undefined) => {
       if (isApiError(error)) {
@@ -183,9 +185,10 @@ const submitInvitation = (payload: Record<string, string | number>) =>
       }
       setInlineError(inviteError, "Unexpected error");
     });
+};
 
-const revokeInvitation = (invitationId: string) =>
-  Effect.runPromise(
+const revokeInvitation = (invitationId: string): void => {
+  void Effect.runPromise(
     postJson(
       `/api/invitations/${invitationId}/revoke`,
       {},
@@ -194,13 +197,14 @@ const revokeInvitation = (invitationId: string) =>
   )
     .then(() => {
       showToast(toastRoot, "Invitation revoked", "success");
-      return loadInvitations();
+      loadInvitations();
     })
     .catch((error: ApiError | JsonValue | undefined) => {
       handleLoadError(error, tableError);
     });
+};
 
-const copyText = (value: string, label: string) => {
+const copyText = (value: string, label: string): void => {
   const copyEffect = pipe(
     Effect.tryPromise(() => navigator.clipboard.writeText(value)),
     Effect.mapError((error) => error instanceof Error ? error : new Error("copy_failed")),
@@ -231,7 +235,7 @@ const handleCopyAction = (
   return true;
 };
 
-const handleInviteSubmit = (event: SubmitEvent) => {
+const handleInviteSubmit = (event: SubmitEvent): void => {
   event.preventDefault();
   const formData = new FormData(inviteForm);
   const prepared = buildInvitePayload(formData);
@@ -239,10 +243,10 @@ const handleInviteSubmit = (event: SubmitEvent) => {
     setInlineError(inviteError, prepared.message);
     return;
   }
-  void submitInvitation(prepared.payload);
+  submitInvitation(prepared.payload);
 };
 
-const handleActionClick = (event: MouseEvent) => {
+const handleActionClick = (event: MouseEvent): void => {
   const target = event.target;
   if (!(target instanceof Element) || !isButton(target)) {
     return;
@@ -252,11 +256,11 @@ const handleActionClick = (event: MouseEvent) => {
     return;
   }
   if (action === "revoke" && isString(id)) {
-    void revokeInvitation(id);
+    revokeInvitation(id);
   }
 };
 
-const handleFilterChange = () => {
+const handleFilterChange = (): void => {
   const statusValue = filterStatus.value;
   const nextStatus: InvitationStatus | "all" = statusValue === "all" ? "all" : (statusValue as InvitationStatus);
   state.filters = {
@@ -269,7 +273,7 @@ const handleFilterChange = () => {
   );
 };
 
-const bootstrap = () => {
+const bootstrap = (): void => {
   inviteForm.addEventListener("submit", handleInviteSubmit);
   elements.invitesBody.addEventListener("click", handleActionClick);
   filterStatus.addEventListener("change", handleFilterChange);
@@ -288,8 +292,8 @@ const bootstrap = () => {
     }
   });
 
-  void loadCurrentUser();
-  void loadInvitations();
+  loadCurrentUser();
+  loadInvitations();
   renderLatest(state.latest);
   renderUserBadge(state, elements);
   renderInvitations(

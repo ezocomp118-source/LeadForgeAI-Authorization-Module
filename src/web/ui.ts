@@ -9,14 +9,14 @@ export const requireElement = <T extends Element>(
   throw new Error(`Missing element #${id}`);
 };
 
-export const toggleHidden = (element: HTMLElement, hidden: boolean) => {
+export const toggleHidden = (element: HTMLElement, hidden: boolean): void => {
   element.classList.toggle("hidden", hidden);
 };
 
 export const setInlineError = (
   element: HTMLElement,
   message: string | null,
-) => {
+): void => {
   if (message === null) {
     toggleHidden(element, true);
     element.textContent = "";
@@ -30,7 +30,7 @@ export const showToast = (
   root: HTMLElement,
   message: string,
   tone: "success" | "error",
-) => {
+): void => {
   const toast = document.createElement("div");
   toast.className = `toast ${tone}`;
   toast.textContent = message;

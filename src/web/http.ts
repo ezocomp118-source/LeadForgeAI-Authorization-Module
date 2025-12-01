@@ -24,11 +24,13 @@ const extractErrorCode = (body: JsonValue): string | null => {
   return typeof candidate === "string" ? candidate : null;
 };
 
-const readJson = (response: Response) =>
+const readJson = (
+  response: Response,
+): PromiseLike<{ readonly response: Response; readonly body: JsonValue }> =>
   response
     .json()
     .then((body) => body as JsonValue)
-    .catch(() => null)
+    .catch(() => null as JsonValue)
     .then((body) => ({ response, body }));
 
 const toNetworkError = (error: Error | JsonValue | undefined): ApiError => {
@@ -80,13 +82,16 @@ const fetchJson = <T>(
     }),
   );
 
-export const getJson = <T>(path: string, decode: JsonDecoder<T>) => fetchJson(path, { method: "GET" }, decode);
+export const getJson = <T>(
+  path: string,
+  decode: JsonDecoder<T>,
+): Effect.Effect<T, ApiError> => fetchJson(path, { method: "GET" }, decode);
 
 export const postJson = <T>(
   path: string,
   body: JsonValue,
   decode: JsonDecoder<T>,
-) =>
+): Effect.Effect<T, ApiError> =>
   fetchJson(
     path,
     {

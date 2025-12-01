@@ -1,8 +1,25 @@
 import bcrypt from "bcryptjs";
+import * as Effect from "effect/Effect";
+import { pipe } from "effect/Function";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 
+import type { users } from "../../core/schema/index.js";
 import { db } from "../db.js";
 import { type LoginCandidate, parseLogin } from "./auth-helpers.js";
+
+type UserRow = typeof users.$inferSelect;
+type ErrorCause =
+  | Error
+  | { readonly message?: string }
+  | string
+  | number
+  | boolean
+  | bigint
+  | symbol
+  | null
+  | undefined;
+type DbError = { readonly _tag: "DbError"; readonly cause: Error };
+type AuthError = DbError | { readonly _tag: "InvalidCredentials" };
 
 export const isAuthenticated = (
   req: Request,
@@ -16,20 +33,19 @@ export const isAuthenticated = (
   res.status(401).json({ error: "unauthorized" });
 };
 
-const respondError = (res: Response, status: number, error: string) => {
+const respondError = (res: Response, status: number, error: string): void => {
   res.status(status).json({ error });
-  return null;
 };
 
-const toUserPayload = (user: {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  profileImageUrl: string | null;
-  emailVerifiedAt: Date | null;
-  phoneVerifiedAt: Date | null;
-}) => ({
+const toUserPayload = (user: UserRow): {
+  readonly id: string;
+  readonly email: string;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly profileImageUrl: string | null;
+  readonly emailVerified: boolean;
+  readonly phoneVerified: boolean;
+} => ({
   id: user.id,
   email: user.email,
   firstName: user.firstName,
@@ -41,14 +57,54 @@ const toUserPayload = (user: {
 
 const verifyPassword = (password: string, passwordHash: string): boolean => bcrypt.compareSync(password, passwordHash);
 
-const findUserByEmail = (email: string) =>
-  db.query.users.findFirst({
-    where: (tbl, { eq: eqFn }) => eqFn(tbl.email, email),
+const asDbError = (cause: ErrorCause): DbError => {
+  if (cause instanceof Error) {
+    return { _tag: "DbError", cause };
+  }
+  if (
+    typeof cause === "object"
+    && cause !== null
+    && "message" in cause
+    && typeof (cause as { readonly message?: string }).message === "string"
+  ) {
+    return { _tag: "DbError", cause: new Error((cause as { readonly message: string }).message) };
+  }
+  let normalized: string;
+  if (
+    typeof cause === "string"
+    || typeof cause === "number"
+    || typeof cause === "boolean"
+    || typeof cause === "bigint"
+    || typeof cause === "symbol"
+  ) {
+    normalized = String(cause);
+  } else {
+    const serialized = JSON.stringify(cause);
+    normalized = typeof serialized === "string" ? serialized : "unknown_error";
+  }
+  return { _tag: "DbError", cause: new Error(normalized) };
+};
+
+const findUserByEmail = (
+  email: string,
+): Effect.Effect<UserRow | undefined, DbError> =>
+  Effect.tryPromise({
+    try: () =>
+      db.query.users.findFirst({
+        where: (tbl, { eq: eqFn }) => eqFn(tbl.email, email),
+      }),
+    catch: (cause) => asDbError(cause as ErrorCause),
   });
 
-const findUserById = (id: string) =>
-  db.query.users.findFirst({
-    where: (tbl, { eq: eqFn }) => eqFn(tbl.id, id),
+const findUserById = (
+  id: string,
+): Effect.Effect<UserRow | undefined, DbError> =>
+  Effect.tryPromise({
+    try: () =>
+      db.query.users.findFirst({
+        where: (tbl, { eq: eqFn }) => eqFn(tbl.id, id),
+      }),
+    catch: (cause) => asDbError(cause as ErrorCause),
   });
 
 export const postLogin: RequestHandler = (req, res, next) => {
@@ -57,29 +113,40 @@ export const postLogin: RequestHandler = (req, res, next) => {
     res.status(400).json({ error: "invalid_payload" });
     return;
   }
-  findUserByEmail(payload.email.toLowerCase())
-    .then((user) => {
-      if (!user) {
-        return respondError(res, 401, "invalid_credentials");
-      }
-      if (!verifyPassword(payload.password, user.passwordHash)) {
-        return respondError(res, 401, "invalid_credentials");
-      }
-      req.session.userId = user.id;
-      res.json(toUserPayload(user));
-      return user;
-    })
-    .catch(next);
+  const program = pipe(
+    findUserByEmail(payload.email.toLowerCase()),
+    Effect.flatMap((user) =>
+      user
+        ? verifyPassword(payload.password, user.passwordHash)
+          ? Effect.sync(() => {
+            req.session.userId = user.id;
+            res.json(toUserPayload(user));
+          })
+          : Effect.fail<AuthError>({ _tag: "InvalidCredentials" })
+        : Effect.fail<AuthError>({ _tag: "InvalidCredentials" })
+    ),
+    Effect.catchAll((err) =>
+      err._tag === "InvalidCredentials"
+        ? Effect.sync(() => {
+          respondError(res, 401, "invalid_credentials");
+        })
+        : Effect.sync(() => {
+          next(err.cause);
+        })
+    ),
+  );
+  Effect.runPromise(program).catch(next);
 };
 
 export const postLogout: RequestHandler = (req, res) => {
-  req.session.destroy((err) => {
+  const handleDestroy = (err: Error | null): void => {
     if (err) {
       res.status(500).json({ error: "logout_failed" });
       return;
     }
     res.status(204).end();
-  });
+  };
+  req.session.destroy(handleDestroy);
 };
 
 export const getMe: RequestHandler = (req, res, next) => {
@@ -87,13 +154,22 @@ export const getMe: RequestHandler = (req, res, next) => {
     res.status(401).json({ error: "unauthorized" });
     return;
   }
-  findUserById(req.session.userId)
-    .then((user) => {
-      if (!user) {
-        res.status(404).json({ error: "user_not_found" });
-        return;
-      }
-      res.json(toUserPayload(user));
-    })
-    .catch(next);
+  const program = pipe(
+    findUserById(req.session.userId),
+    Effect.flatMap((user) =>
+      user
+        ? Effect.sync(() => {
+          res.json(toUserPayload(user));
+        })
+        : Effect.sync(() => {
+          res.status(404).json({ error: "user_not_found" });
+        })
+    ),
+    Effect.catchAll((err) =>
+      Effect.sync(() => {
+        next(err.cause);
+      })
+    ),
+  );
+  Effect.runPromise(program).catch(next);
 };

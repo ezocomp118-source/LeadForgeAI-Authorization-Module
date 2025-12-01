@@ -182,7 +182,9 @@ const toRequestBody = (
     }
     : undefined;
 
-export const buildPaths = (routes: ReadonlyArray<RouteContract>) => {
+export const buildPaths = (
+  routes: ReadonlyArray<RouteContract>,
+): Record<string, Record<HttpMethod, PathMethodObject>> => {
   const paths: Record<
     string,
     Partial<Record<HttpMethod, PathMethodObject>>
