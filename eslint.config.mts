@@ -9,6 +9,7 @@ import reactPlugin from "eslint-plugin-react";
 import sqlPlugin from "eslint-plugin-sql";
 import sqlTemplatePlugin from "eslint-plugin-sql-template";
 import { createSqlitePlugin } from "eslint-plugin-sqlite";
+import effect from "@effect/eslint-plugin";
 import drizzle from "eslint-plugin-drizzle";
 import typeormTypescriptPlugin from "eslint-plugin-typeorm-typescript";
 import vitest from "eslint-plugin-vitest";
@@ -43,13 +44,16 @@ export default defineConfig(
 			}
 		},
 		plugins: {
+			effect,
 			sql: sqlPlugin,
 			"sql-template": sqlTemplatePlugin,
 			sqlite: sqlitePlugin,
 			"typeorm-typescript": typeormTypescriptPlugin
 		},
-		files: ["src/**/*.ts", "src/**/*.tsx", "react-admin/**/*.ts", "react-admin/**/*.tsx"],
+		files: ["**/*.ts", "**/*.tsx"],
 		rules: {
+			"effect/dprint": "error",
+			"effect/no-import-from-barrel-package": "error",
 			complexity: ["error", 8],
 			"max-lines-per-function": [
 				"error",

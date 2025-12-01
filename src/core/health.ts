@@ -7,8 +7,8 @@
 // INVARIANT: status constant is always "ok"
 // COMPLEXITY: O(1) time / O(1) space
 export type HealthStatus = {
-	readonly status: "ok";
-	readonly timestamp: number;
+  readonly status: "ok";
+  readonly timestamp: number;
 };
 
 /**
@@ -22,6 +22,6 @@ export type HealthStatus = {
  * COMPLEXITY: O(1)
  */
 export const computeHealth = (now: number): HealthStatus => ({
-	status: "ok",
-	timestamp: now,
+  status: "ok",
+  timestamp: now,
 });
