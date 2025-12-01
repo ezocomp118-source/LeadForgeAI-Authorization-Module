@@ -1,5 +1,6 @@
-import type { InvitationStatus } from "../core/schema/index.js";
-import type { InvitationView } from "../shared/invitations-types.js";
+import type { InvitationStatus } from "../../src/core/schema/index.js";
+import type { InvitationView } from "../../src/shared/invitations-types.js";
+
 export type { InvitationStatus, InvitationView };
 
 export type JsonValue =

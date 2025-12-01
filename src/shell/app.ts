@@ -4,6 +4,7 @@ import { join } from "node:path";
 import swaggerUi from "swagger-ui-express";
 
 import { computeHealth } from "../core/health.js";
+import { loadManifest, lookupEntryAssets, renderHtmlShell } from "./frontend-manifest.js";
 import { getMe, isAuthenticated, postLogin, postLogout } from "./routes/auth.js";
 import { getInvitations, postInvitation, requireAdmin, revokeInvitation } from "./routes/invitations.js";
 import { postRegister } from "./routes/registration.js";
@@ -34,22 +35,38 @@ const applySession = (app: Express): void => {
 const mountStatic = (
   app: Express,
   staticRoot: string,
-  htmlRoot: string,
 ): void => {
-  const sendAuthAdmin = (_req: Request, res: Response): void => {
-    res.sendFile(join(htmlRoot, "auth-admin.html"));
-  };
-  const sendRegister = (_req: Request, res: Response): void => {
-    res.sendFile(join(htmlRoot, "register.html"));
+  const manifest = loadManifest(staticRoot);
+  const sendHtml = (entryKey: string, title: string) => (_req: Request, res: Response): void => {
+    const assets = lookupEntryAssets(manifest, entryKey);
+    if (!assets) {
+      res
+        .status(503)
+        .send("Frontend assets not found. Run `npm run build` before serving.");
+      return;
+    }
+    res.type("html").send(renderHtmlShell(assets, title));
   };
 
   app.use("/auth-admin", express.static(staticRoot));
   app.use("/register", express.static(staticRoot));
   app.use("/assets", express.static(join(staticRoot, "assets")));
-  app.get("/auth-admin", sendAuthAdmin);
-  app.get("/auth-admin/*", sendAuthAdmin);
-  app.get("/register", sendRegister);
-  app.get("/register/*", sendRegister);
+  app.get(
+    "/auth-admin",
+    sendHtml("react-admin/src/auth-admin.tsx", "Authorization Admin · Invitations"),
+  );
+  app.get(
+    "/auth-admin/*",
+    sendHtml("react-admin/src/auth-admin.tsx", "Authorization Admin · Invitations"),
+  );
+  app.get(
+    "/register",
+    sendHtml("react-admin/src/register.tsx", "Register with invitation"),
+  );
+  app.get(
+    "/register/*",
+    sendHtml("react-admin/src/register.tsx", "Register with invitation"),
+  );
 };
 
 const mountApiRoutes = (app: Express): void => {
@@ -87,12 +104,11 @@ const mountApiRoutes = (app: Express): void => {
 export const createApp = (): Express => {
   const app = express();
   const staticRoot = join(process.cwd(), "dist");
-  const htmlRoot = join(staticRoot, "web");
 
   app.use(express.json());
   applySession(app);
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-  mountStatic(app, staticRoot, htmlRoot);
+  mountStatic(app, staticRoot);
 
   app.get("/health", (_req: Request, res: Response): void => {
     const payload = computeHealth(Date.now());

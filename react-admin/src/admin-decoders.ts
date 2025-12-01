@@ -1,5 +1,4 @@
-import { match } from "ts-pattern";
-
+import { describeTransportError } from "./error-describer.js";
 import { isNullableString, isRecord, isString } from "./guards.js";
 import type { ApiError } from "./http.js";
 import type { InvitationStatus, InvitationView, JsonValue, MeProfile } from "./types.js";
@@ -181,20 +180,19 @@ export const decodeMe = (value: JsonValue): MeProfile | null => {
     : null;
 };
 
-export const describeApiError = (error: ApiError): string =>
-  match<ApiError, string>(error)
-    .with({ _tag: "NetworkError" }, (err) => `Network error: ${err.reason}`)
-    .with(
-      { _tag: "DecodeError" },
-      (err) => `Response decode failed: ${err.reason}`,
-    )
-    .with({ _tag: "ApiError" }, (err) => {
-      if (err.error === "invalid_payload") {
-        return "Payload rejected: check required fields.";
-      }
-      if (err.error === "forbidden") {
-        return "Only admin/HR accounts can manage invitations.";
-      }
-      return `API error ${err.status}: ${err.error}`;
-    })
-    .exhaustive();
+export const describeApiError = (error: ApiError): string => {
+  const transport = describeTransportError(error);
+  if (transport !== null) {
+    return transport;
+  }
+  if (error._tag !== "ApiError") {
+    return "Unknown error";
+  }
+  if (error.error === "invalid_payload") {
+    return "Payload rejected: check required fields.";
+  }
+  if (error.error === "forbidden") {
+    return "Only admin/HR accounts can manage invitations.";
+  }
+  return `API error ${error.status}: ${error.error}`;
+};
