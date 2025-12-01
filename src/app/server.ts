@@ -1,21 +1,21 @@
-import type { Server } from "node:http";
 import { Effect, pipe } from "effect";
 import type { Express } from "express";
+import type { Server } from "node:http";
 
 import { createApp } from "../shell/app.js";
 
 type ServerConfig = {
-	readonly port: number;
+  readonly port: number;
 };
 
 type ServerInfo = {
-	readonly port: number;
-	readonly httpServer: Server;
+  readonly port: number;
+  readonly httpServer: Server;
 };
 
 type ServerError = {
-	readonly _tag: "ServerError";
-	readonly reason: string;
+  readonly _tag: "ServerError";
+  readonly reason: string;
 };
 
 /**
@@ -28,8 +28,8 @@ type ServerError = {
  * COMPLEXITY: O(1)
  */
 const serverError = (reason: string): ServerError => ({
-	_tag: "ServerError",
-	reason,
+  _tag: "ServerError",
+  reason,
 });
 
 /**
@@ -44,22 +44,22 @@ const serverError = (reason: string): ServerError => ({
  * COMPLEXITY: O(1)
  */
 const listen = (
-	app: Express,
-	port: number,
+  app: Express,
+  port: number,
 ): Effect.Effect<ServerInfo, ServerError> =>
-	Effect.async<ServerInfo, ServerError>((resume) => {
-		const httpServer = app.listen(port, (): void => {
-			resume(Effect.succeed({ port, httpServer }));
-		});
+  Effect.async<ServerInfo, ServerError>((resume) => {
+    const httpServer = app.listen(port, (): void => {
+      resume(Effect.succeed({ port, httpServer }));
+    });
 
-		httpServer.on("error", (err: Error): void => {
-			resume(Effect.fail(serverError(err.message)));
-		});
+    httpServer.on("error", (err: Error): void => {
+      resume(Effect.fail(serverError(err.message)));
+    });
 
-		return Effect.sync(() => {
-			httpServer.close();
-		});
-	});
+    return Effect.sync(() => {
+      httpServer.close();
+    });
+  });
 
 // CHANGE: Imperative shell that boots the HTTP server via Effect runtime
 // WHY: Keep IO orchestration isolated from business logic
@@ -71,12 +71,12 @@ const listen = (
 // INVARIANT: Server starts exactly once and resource cleanup closes listener
 // COMPLEXITY: O(1) startup
 const startServer = (
-	config: ServerConfig,
+  config: ServerConfig,
 ): Effect.Effect<ServerInfo, ServerError> =>
-	pipe(
-		Effect.sync(createApp),
-		Effect.flatMap((app) => listen(app, config.port)),
-	);
+  pipe(
+    Effect.sync(createApp),
+    Effect.flatMap((app) => listen(app, config.port)),
+  );
 
 /**
  * CHANGE: Pure port parser with fallback
@@ -89,8 +89,8 @@ const startServer = (
  * COMPLEXITY: O(1)
  */
 const parsePort = (raw: string | undefined): number => {
-	const candidate = Number(raw);
-	return Number.isFinite(candidate) && candidate > 0 ? candidate : 3000;
+  const candidate = Number(raw);
+  return Number.isFinite(candidate) && candidate > 0 ? candidate : 3000;
 };
 
 /**
@@ -108,15 +108,15 @@ const { PORT } = process.env;
 const program = startServer({ port: parsePort(PORT) });
 
 const logFailure = (cause: ServerError): Effect.Effect<void> =>
-	Effect.sync(() => {
-		console.error("Server failed", cause);
-	});
+  Effect.sync(() => {
+    console.error("Server failed", cause);
+  });
 
 const logSuccess = (info: ServerInfo): Effect.Effect<void> =>
-	Effect.sync(() => {
-		console.log(`HTTP server listening on port ${info.port}`);
-	});
+  Effect.sync(() => {
+    console.log(`HTTP server listening on port ${info.port}`);
+  });
 
 Effect.runFork(
-	pipe(program, Effect.tap(logSuccess), Effect.tapError(logFailure)),
+  pipe(program, Effect.tap(logSuccess), Effect.tapError(logFailure)),
 );
