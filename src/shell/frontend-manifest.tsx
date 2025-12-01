@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { FC } from "react";
-import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 type ManifestEntry = {
