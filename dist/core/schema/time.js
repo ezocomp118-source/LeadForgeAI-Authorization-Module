@@ -1,4 +1,4 @@
-import { integer, numeric, pgTable, text, timestamp, uuid, } from "drizzle-orm/pg-core";
+import { integer, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 // CHANGE: Time accounting tables for shift tracking and task attribution
 // WHY: Provide immutable audit of "Время в системе" vs "Активное рабочее время"
 // QUOTE(ТЗ): "Учет времени ... Начать смену ... Завершить смену ... Время в системе и Активное рабочее время"

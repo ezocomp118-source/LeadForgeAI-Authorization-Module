@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 // CHANGE: Define organization identity primitives (users, departments, roles) as typed SQL tables
 // WHY: Provide type-level guarantees for access control entities and enable Drizzle codegen
 // QUOTE(ТЗ): "Сделай что бы мы описывали бы TypeScript типы которые бы конертировались бы в SQL таблицы"

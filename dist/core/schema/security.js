@@ -1,4 +1,4 @@
-import { jsonb, pgTable, text, timestamp, uuid, varchar, } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { users } from "./identity.js";
 // CHANGE: Connect-pg-simple compatible session storage
 // WHY: Provide module-owned source of truth for sessions table used by express-session store

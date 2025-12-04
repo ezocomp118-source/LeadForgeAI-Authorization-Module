@@ -41,3 +41,8 @@
 ## 9. Деплой и конфигурация
 - [x] Централизованный `DEVELOPMENT_DATABASE_URL`, session secret env.
 - [ ] Postgres session store, env для TTL/секретов, готовность окружений (k8s/pm2 и т.п.).
+
+## 10. Встраивание в хост-Express
+- Используй `applySession(app, { secret?, store?, cookie? })` чтобы навесить middleware на существующий store/secret без второй куки.
+- После сессии вызови `mountApiRoutes(app)` — получишь все auth/registration/verification/invitations маршруты на той же сессии.
+- Импорт для хоста: `import { applySession, mountApiRoutes } from "leadforgeai-authorization-module";`

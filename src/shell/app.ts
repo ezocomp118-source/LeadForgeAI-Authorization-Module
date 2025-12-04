@@ -16,20 +16,51 @@ import {
 } from "./routes/verification.js";
 import { swaggerDocument } from "./swagger.js";
 
-const applySession = (app: Express): void => {
+export type SessionMiddlewareConfig = {
+  readonly secret?: string;
+  readonly store?: session.Store;
+  readonly cookie?: Partial<session.CookieOptions>;
+};
+
+const deriveSessionOptions = (config?: SessionMiddlewareConfig): session.SessionOptions => {
   const { SESSION_SECRET: sessionSecret } = process.env;
-  app.use(
-    session({
-      secret: sessionSecret ?? "insecure-session-secret",
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-      },
-    }),
-  );
+  const resolvedSecret = config?.secret ?? sessionSecret ?? "insecure-session-secret";
+
+  const cookieDefaults: session.CookieOptions = {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  };
+
+  const options: session.SessionOptions = {
+    secret: resolvedSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { ...cookieDefaults, ...(config?.cookie ?? {}) },
+  };
+
+  if (config?.store) {
+    options.store = config.store;
+  }
+
+  return options;
+};
+
+/**
+ * CHANGE: Exportable session middleware with host-provided store/secret support
+ * WHY: Allow host Express apps to reuse a single session store/cookie without duplication
+ * QUOTE(ТЗ): "applySession должен принимать опциональный конфиг (secret, cookie opts, store)"
+ * REF: AUTH-SESSION-EMBED
+ * PURITY: SHELL
+ * EFFECT: Effect<Express, never, never>
+ * INVARIANT: session middleware is attached exactly once per Express instance
+ * COMPLEXITY: O(1)
+ */
+export const applySession = (
+  app: Express,
+  config?: SessionMiddlewareConfig,
+): void => {
+  app.use(session(deriveSessionOptions(config)));
 };
 
 const mountStatic = (
@@ -69,7 +100,17 @@ const mountStatic = (
   );
 };
 
-const mountApiRoutes = (app: Express): void => {
+/**
+ * CHANGE: Exportable API router installer
+ * WHY: Allow host Express apps to mount module REST endpoints on an existing server
+ * QUOTE(ТЗ): "mountApiRoutes(app: Express): void — подключение REST-роутов"
+ * REF: AUTH-ROUTES-EMBED
+ * PURITY: SHELL
+ * EFFECT: Effect<Express, never, never>
+ * INVARIANT: Routes are registered under /api/* with attached auth guards
+ * COMPLEXITY: O(1) registration
+ */
+export const mountApiRoutes = (app: Express): void => {
   app.get("/api/invitations", isAuthenticated, requireAdmin, getInvitations);
   app.post("/api/invitations", isAuthenticated, requireAdmin, postInvitation);
   app.post(

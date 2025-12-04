@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, primaryKey, text, timestamp, uuid, } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 // CHANGE: Project/space access model for fine-grained permission assignments
 // WHY: Reflect "Проект/Рабочая группа" из ТЗ для точечного предоставления доступа
 // QUOTE(ТЗ): "Использование сущности 'Проект' или 'Рабочая группа' для точечного предоставления доступа"

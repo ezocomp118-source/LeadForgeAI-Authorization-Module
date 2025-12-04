@@ -1,0 +1,31 @@
+{
+  "_styles-7MbEsUcA.css": {
+    "file": "assets/styles-7MbEsUcA.css",
+    "src": "_styles-7MbEsUcA.css"
+  },
+  "_styles-T473Wog5.js": {
+    "file": "assets/styles-T473Wog5.js",
+    "name": "styles",
+    "css": [
+      "assets/styles-7MbEsUcA.css"
+    ]
+  },
+  "react-admin/src/auth-admin.tsx": {
+    "file": "assets/authAdmin-Cjz0TqY2.js",
+    "name": "authAdmin",
+    "src": "react-admin/src/auth-admin.tsx",
+    "isEntry": true,
+    "imports": [
+      "_styles-T473Wog5.js"
+    ]
+  },
+  "react-admin/src/register.tsx": {
+    "file": "assets/register-DadNZyoM.js",
+    "name": "register",
+    "src": "react-admin/src/register.tsx",
+    "isEntry": true,
+    "imports": [
+      "_styles-T473Wog5.js"
+    ]
+  }
+}

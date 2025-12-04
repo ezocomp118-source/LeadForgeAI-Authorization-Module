@@ -3,10 +3,19 @@
 	"version": "0.1.0",
 	"description": "Minimal Express + Effect functional shell/core scaffold with Drizzle schemas.",
 	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
 	"scripts": {
 		"dev": "tsx src/app/server.ts",
 		"dev:neon": "node scripts/run-dev-with-development-db.js",
-		"build": "vite build",
+		"build": "vite build && npm run build:module",
+		"build:module": "tsc -p tsconfig.module.json",
 		"lint": "npx @ton-ai-core/vibecode-linter src",
 		"lint-frontend": "npx @ton-ai-core/vibecode-linter react-admin",
 		"build:schema": "tsc -p tsconfig.schema.json",
