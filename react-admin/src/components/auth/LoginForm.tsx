@@ -2,9 +2,10 @@ import { useMutation } from "@tanstack/react-query";
 import { Effect, pipe } from "effect";
 import type { FC, FormEvent } from "react";
 import { useState } from "react";
+import { match, P } from "ts-pattern";
 
-import { apiRequest, queryClient } from "../../lib/queryClient.js";
-import { type AuthMutationError, describeAuthError } from "./auth-error.js";
+import { queryClient } from "../../lib/queryClient.js";
+import { type AuthMutationError, decodeAuthErrorCode, describeAuthError, isAuthErrorCode } from "./auth-error.js";
 
 type LoginSuccessResponse = {
   readonly id: string;
@@ -25,6 +26,103 @@ type LoginViewState = {
   readonly onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   readonly onSwitchToRegister: () => void;
 };
+
+type Credentials = { readonly email: string; readonly password: string };
+
+type LoginError =
+  | { readonly _tag: "HttpError"; readonly status: number; readonly code: string | null }
+  | { readonly _tag: "NetworkError"; readonly reason: string }
+  | { readonly _tag: "DecodeError"; readonly reason: string };
+
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly JsonValue[]
+  | { readonly [key: string]: JsonValue };
+
+type ErrorCause =
+  | Error
+  | { readonly message?: string }
+  | string
+  | number
+  | boolean
+  | symbol
+  | bigint
+  | null
+  | undefined;
+
+type MessageCarrier = { readonly message?: string };
+
+const hasMessage = (value: MessageCarrier | null): value is { readonly message: string } =>
+  value !== null && typeof value.message === "string";
+
+const inferMessage = (cause: Exclude<ErrorCause, Error>): string =>
+  match(cause)
+    .with(P.string, (value) => value)
+    .with(P.union(P.number, P.boolean, P.bigint), (value) => `${value}`)
+    .with(P.symbol, (value) => value.description ?? "unknown_error")
+    .with(
+      P.when(
+        (value): value is { readonly message: string } =>
+          hasMessage(typeof value === "object" && value !== null ? (value as MessageCarrier) : null),
+      ),
+      (value) => value.message,
+    )
+    .otherwise(() => "unknown_error");
+
+const toError = (cause: ErrorCause): Error => cause instanceof Error ? cause : new Error(inferMessage(cause));
+
+const parseErrorCode = (body: JsonValue): string | null => {
+  if (
+    typeof body === "object"
+    && body !== null
+    && "error" in body
+    && typeof (body as { readonly error?: string | null }).error === "string"
+  ) {
+    return (body as { readonly error: string }).error;
+  }
+  return null;
+};
+
+const performLogin = (
+  credentials: Credentials,
+): Effect.Effect<LoginSuccessResponse, LoginError> =>
+  pipe(
+    Effect.tryPromise(() =>
+      fetch("/api/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(credentials),
+      })
+    ),
+    Effect.mapError((error) => ({ _tag: "NetworkError", reason: toError(error as ErrorCause).message } as LoginError)),
+    Effect.flatMap((response) =>
+      response.ok
+        ? pipe(
+          Effect.tryPromise<LoginSuccessResponse>(() => response.json()),
+          Effect.mapError((
+            error,
+          ) => ({ _tag: "DecodeError", reason: toError(error as ErrorCause).message } as LoginError)),
+          Effect.map((body) => body),
+        )
+        : pipe(
+          Effect.tryPromise<JsonValue>(() => response.json()),
+          Effect.mapError((
+            error,
+          ) => ({ _tag: "DecodeError", reason: toError(error as ErrorCause).message } as LoginError)),
+          Effect.flatMap((body) =>
+            Effect.fail<LoginError>({
+              _tag: "HttpError",
+              status: response.status,
+              code: parseErrorCode(body),
+            })
+          ),
+        )
+    ),
+  );
 
 const LoginHeader: FC = () => (
   <div>
@@ -95,37 +193,26 @@ const LoginFormView: FC<LoginViewState> = (props) => (
 );
 
 type LoginMutationHandlers = {
-  readonly submit: (credentials: { readonly email: string; readonly password: string }) => void;
+  readonly submit: (credentials: Credentials) => void;
   readonly isPending: boolean;
 };
 
+const resolveLoginError = (error: LoginError | AuthMutationError): string =>
+  match<LoginError | AuthMutationError, string>(error)
+    .with({ _tag: "HttpError" }, (err) => decodeAuthErrorCode(err.code && isAuthErrorCode(err.code) ? err.code : null))
+    .with({ _tag: "NetworkError" }, (err) => err.reason)
+    .with({ _tag: "DecodeError" }, (err) => err.reason)
+    .otherwise((err) => describeAuthError(err, "Invalid email or password"));
+
 const useLoginMutation = (setFormError: (value: string | null) => void): LoginMutationHandlers => {
-  const mutation = useMutation<
-    LoginSuccessResponse,
-    AuthMutationError,
-    { readonly email: string; readonly password: string }
-  >({
-    mutationFn: (credentials) =>
-      Effect.runPromise(
-        pipe(
-          apiRequest("POST", "/api/auth/login", credentials),
-          Effect.flatMap((response) =>
-            pipe(
-              Effect.tryPromise({
-                try: () => response.json(),
-                catch: (error) => (error instanceof Error ? error : new Error(String(error))),
-              }),
-              Effect.map((body) => body as LoginSuccessResponse),
-            )
-          ),
-        ),
-      ),
+  const mutation = useMutation<LoginSuccessResponse, LoginError | AuthMutationError, Credentials>({
+    mutationFn: (credentials) => Effect.runPromise(performLogin(credentials)),
     onSuccess: () => {
       setFormError(null);
       void queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     },
     onError: (error) => {
-      const message = describeAuthError(error, "Invalid email or password");
+      const message = resolveLoginError(error);
       setFormError(message);
     },
   });
