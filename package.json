@@ -20,6 +20,7 @@
 		"@effect/sql-drizzle": "^0.47.0",
 		"@effect/sql-pg": "^0.49.7",
 		"@handfish/drizzle-effect": "^0.0.17",
+		"@tanstack/react-query": "^5.90.12",
 		"@types/bcryptjs": "^2.4.6",
 		"@types/express-session": "^1.18.2",
 		"@types/swagger-ui-express": "^4.1.8",
