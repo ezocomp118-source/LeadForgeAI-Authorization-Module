@@ -1,4 +1,4 @@
-import { date, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, } from "drizzle-orm/pg-core";
+import { date, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { departments, positions, users } from "./identity.js";
 // CHANGE: Onboarding, profile enrichment, and employment change logs
 // WHY: Persist invitation-driven registration, user-editable profile fields, and auditable admin-only employment moves

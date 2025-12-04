@@ -284,14 +284,14 @@ export declare const userProfiles: import("drizzle-orm/pg-core").PgTableWithColu
     schema: undefined;
     columns: {
         createdAt: import("drizzle-orm/pg-core").PgColumn<{
-            name: "created_at";
+            name: string;
             tableName: "user_profiles";
             dataType: "date";
             columnType: "PgTimestamp";
             data: Date;
             driverParam: string;
-            notNull: true;
-            hasDefault: true;
+            notNull: false;
+            hasDefault: false;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
@@ -301,14 +301,14 @@ export declare const userProfiles: import("drizzle-orm/pg-core").PgTableWithColu
             generated: undefined;
         }, {}, {}>;
         updatedAt: import("drizzle-orm/pg-core").PgColumn<{
-            name: "updated_at";
+            name: string;
             tableName: "user_profiles";
             dataType: "date";
             columnType: "PgTimestamp";
             data: Date;
             driverParam: string;
-            notNull: true;
-            hasDefault: true;
+            notNull: false;
+            hasDefault: false;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
@@ -393,14 +393,14 @@ export declare const userMessengers: import("drizzle-orm/pg-core").PgTableWithCo
     schema: undefined;
     columns: {
         createdAt: import("drizzle-orm/pg-core").PgColumn<{
-            name: "created_at";
+            name: string;
             tableName: "user_messengers";
             dataType: "date";
             columnType: "PgTimestamp";
             data: Date;
             driverParam: string;
-            notNull: true;
-            hasDefault: true;
+            notNull: false;
+            hasDefault: false;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
@@ -410,14 +410,14 @@ export declare const userMessengers: import("drizzle-orm/pg-core").PgTableWithCo
             generated: undefined;
         }, {}, {}>;
         updatedAt: import("drizzle-orm/pg-core").PgColumn<{
-            name: "updated_at";
+            name: string;
             tableName: "user_messengers";
             dataType: "date";
             columnType: "PgTimestamp";
             data: Date;
             driverParam: string;
-            notNull: true;
-            hasDefault: true;
+            notNull: false;
+            hasDefault: false;
             isPrimaryKey: false;
             isAutoincrement: false;
             hasRuntimeDefault: false;
