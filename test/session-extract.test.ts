@@ -3,6 +3,7 @@ import { IncomingMessage } from "node:http";
 import { Socket } from "node:net";
 import { describe, expect, it } from "vitest";
 
+import { Effect } from "effect";
 import { getSessionUserIdFromRequest } from "../src/shell/session-extract.js";
 
 const createRequest = (cookieHeader: string | undefined): IncomingMessage => {
@@ -25,9 +26,11 @@ describe("getSessionUserIdFromRequest", () => {
       );
     });
 
-    const userId = await getSessionUserIdFromRequest(
-      createRequest(`connect.sid=${encodeURIComponent("sid-plain")}`),
-      { store },
+    const userId = await Effect.runPromise(
+      getSessionUserIdFromRequest(
+        createRequest(`connect.sid=${encodeURIComponent("sid-plain")}`),
+        { store },
+      ),
     );
 
     expect(userId).toBe("user-123");
@@ -44,9 +47,11 @@ describe("getSessionUserIdFromRequest", () => {
     });
 
     const encoded = encodeURIComponent("s:sid-signed.signature");
-    const userId = await getSessionUserIdFromRequest(
-      createRequest(`connect.sid=${encoded}`),
-      { store },
+    const userId = await Effect.runPromise(
+      getSessionUserIdFromRequest(
+        createRequest(`connect.sid=${encoded}`),
+        { store },
+      ),
     );
 
     expect(userId).toBe("user-999");
@@ -54,7 +59,9 @@ describe("getSessionUserIdFromRequest", () => {
 
   it("returns null when session missing", async () => {
     const store = new session.MemoryStore();
-    const userId = await getSessionUserIdFromRequest(createRequest(undefined), { store });
+    const userId = await Effect.runPromise(
+      getSessionUserIdFromRequest(createRequest(undefined), { store }),
+    );
     expect(userId).toBeNull();
   });
 });

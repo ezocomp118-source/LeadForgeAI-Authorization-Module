@@ -1,8 +1,8 @@
 # WebSocket session extraction
 
-- `getSessionUserIdFromRequest(req, { cookieName?, store?, conString?, tableName?, createTableIfMissing? })` — читает `userId` из сессии по cookie (по умолчанию `connect.sid`, поддерживает `s:<sid>.<sig>`).
+- `getSessionUserIdFromRequest(req, { cookieName?, store?, conString?, tableName?, createTableIfMissing? })` — читает `userId` из сессии по cookie (по умолчанию `connect.sid`, поддерживает `s:<sid>.<sig>`), возвращает `Effect.Effect<string | null>`.
 - Если `store` не передан, можно указать `conString`/`tableName` (по умолчанию `app_sessions`) — будет создан `connect-pg-simple` store; иначе используется переданный store или `MemoryStore`.
-- Возвращает `Promise<string | null>` из `session.userId` или `session.passport.user.id`.
+- Возвращает `Effect.Effect<string | null>` из `session.userId` или `session.passport.user.id`.
 
 ## Пример: готовый PG store у хоста
 ```ts
@@ -13,17 +13,18 @@ import { getSessionUserIdFromRequest } from "leadforgeai-authorization-module";
 const PgStore = connectPg(session);
 const store = new PgStore({ conString: process.env.DATABASE_URL, tableName: "app_sessions" });
 
-const userId = await getSessionUserIdFromRequest(req, { store });
+const userId = await Effect.runPromise(getSessionUserIdFromRequest(req, { store }));
 ```
 
 ## Пример: создать store внутри вызова
 ```ts
+import { Effect } from "effect";
 import { getSessionUserIdFromRequest } from "leadforgeai-authorization-module";
 
-const userId = await getSessionUserIdFromRequest(req, {
+const userId = await Effect.runPromise(getSessionUserIdFromRequest(req, {
   conString: process.env.DATABASE_URL,
   tableName: "app_sessions",
-});
+}));
 ```
 
 ## Интеграция
