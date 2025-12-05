@@ -24,6 +24,10 @@ import {
   toInvitationView,
   toIso,
 } from "./invitations-helpers.js";
+import {
+  sendInvitationEmail,
+  type InvitationEmailError,
+} from "./invitations-email.js";
 
 type MembershipRole = typeof departmentMemberships.$inferSelect.role;
 
@@ -142,15 +146,29 @@ export const postInvitation: RequestHandler = (req, res, next) => {
   const program = pipe(
     insertInvitation(payload, inviterId, token, tokenHash, expirationDate),
     Effect.tap(() =>
+      sendInvitationEmail({ email: payload.email, token })
+    ),
+    Effect.tap(() =>
       Effect.sync(() => {
         res
           .status(201)
           .json({ token, expiresAt: expirationDate.toISOString() });
       })
     ),
-    forwardDbErrors(next),
+    Effect.catchAll((err) =>
+      match<DbError | InvitationEmailError, Effect.Effect<void>>(err)
+        .with({ _tag: "InvitationEmailFailed" }, () =>
+          Effect.sync(() => {
+            res.status(502).json({ error: "email_send_failed" });
+          }))
+        .with({ _tag: "DbError" }, (dbErr) =>
+          Effect.sync(() => {
+            next(dbErr.cause);
+          }))
+        .exhaustive()
+    ),
   );
-  runRouteProgram(program, next);
+  runRouteProgram(program as Effect.Effect<void, DbError>, next);
 };
 
 // CHANGE: Invitation revocation without Promise chaining
