@@ -34,6 +34,7 @@
 		"@types/express-session": "^1.18.2",
 		"@types/swagger-ui-express": "^4.1.8",
 		"bcryptjs": "^3.0.3",
+		"connect-pg-simple": "^9.0.0",
 		"dotenv": "^16.4.5",
 		"drizzle-orm": "^0.44.7",
 		"effect": "^3.19.8",
