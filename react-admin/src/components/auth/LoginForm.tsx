@@ -4,13 +4,11 @@ import type { FC, FormEvent } from "react";
 import { useState } from "react";
 import { match, P } from "ts-pattern";
 
+import { type AuthUser } from "../../hooks/useAuth.js";
 import { queryClient } from "../../lib/queryClient.js";
 import { type AuthMutationError, decodeAuthErrorCode, describeAuthError, isAuthErrorCode } from "./auth-error.js";
 
-type LoginSuccessResponse = {
-  readonly id: string;
-  readonly email: string;
-};
+type LoginSuccessResponse = AuthUser;
 
 type LoginFormProps = {
   readonly onSwitchToRegister: () => void;
@@ -20,6 +18,7 @@ type LoginViewState = {
   readonly email: string;
   readonly password: string;
   readonly formError: string | null;
+  readonly statusMessage: string | null;
   readonly isPending: boolean;
   readonly onEmailChange: (value: string) => void;
   readonly onPasswordChange: (value: string) => void;
@@ -86,6 +85,10 @@ const parseErrorCode = (body: JsonValue): string | null => {
   return null;
 };
 
+const logLoginFlow = (message: string, details?: Record<string, unknown>): void => {
+  console.info("[LoginFlow]", message, details ?? {});
+};
+
 const performLogin = (
   credentials: Credentials,
 ): Effect.Effect<LoginSuccessResponse, LoginError> =>
@@ -136,6 +139,7 @@ const LoginFields: FC<LoginViewState> = ({
   email,
   password,
   formError,
+  statusMessage,
   isPending,
   onEmailChange,
   onPasswordChange,
@@ -179,6 +183,7 @@ const LoginFields: FC<LoginViewState> = ({
         Need an account? Register
       </button>
     </div>
+    {statusMessage ? <div className="info full">{statusMessage}</div> : null}
     {formError ? <div className="error full">{formError}</div> : null}
   </form>
 );
@@ -204,16 +209,28 @@ const resolveLoginError = (error: LoginError | AuthMutationError): string =>
     .with({ _tag: "DecodeError" }, (err) => err.reason)
     .otherwise((err) => describeAuthError(err, "Invalid email or password"));
 
-const useLoginMutation = (setFormError: (value: string | null) => void): LoginMutationHandlers => {
+const useLoginMutation = (
+  setFormError: (value: string | null) => void,
+  setStatusMessage: (value: string | null) => void,
+): LoginMutationHandlers => {
   const mutation = useMutation<LoginSuccessResponse, LoginError | AuthMutationError, Credentials>({
-    mutationFn: (credentials) => Effect.runPromise(performLogin(credentials)),
-    onSuccess: () => {
+    mutationFn: (credentials) => {
+      logLoginFlow("submit:start", { email: credentials.email });
+      setStatusMessage("Отправляем запрос на вход…");
+      return Effect.runPromise(performLogin(credentials));
+    },
+    onSuccess: (user) => {
       setFormError(null);
+      setStatusMessage("Успешный вход. Обновляем данные профиля.");
+      logLoginFlow("submit:success", { email: user.email, id: user.id });
+      queryClient.setQueryData(["/api/auth/me"], user);
       void queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     },
     onError: (error) => {
       const message = resolveLoginError(error);
       setFormError(message);
+      setStatusMessage(`Ошибка входа: ${message}`);
+      logLoginFlow("submit:error", { reason: message });
     },
   });
 
@@ -224,12 +241,20 @@ const useLoginController = (onSwitchToRegister: () => void): LoginViewState => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
-  const { submit, isPending } = useLoginMutation(setFormError);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const { submit, isPending } = useLoginMutation(setFormError, setStatusMessage);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
+    setFormError(null);
+    setStatusMessage("Отправляем запрос на вход…");
     if (!email.trim() || !password.trim()) {
       setFormError("Введите почту и пароль");
+      setStatusMessage("Остановлено: пустая почта или пароль");
+      logLoginFlow("submit:invalid", {
+        emailEmpty: email.trim().length === 0,
+        passwordEmpty: password.trim().length === 0,
+      });
       return;
     }
     submit({ email, password });
@@ -239,6 +264,7 @@ const useLoginController = (onSwitchToRegister: () => void): LoginViewState => {
     email,
     password,
     formError,
+    statusMessage,
     isPending,
     onEmailChange: setEmail,
     onPasswordChange: setPassword,

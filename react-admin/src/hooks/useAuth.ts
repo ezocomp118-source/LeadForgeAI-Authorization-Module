@@ -85,6 +85,7 @@ const authQueryEffect = (
           });
           return;
         }
+        deps.unauthorizedRef.current = false;
         logAuthState("auth fetch success", {
           cookiePresent: deps.hasCookie,
           unauthorized: deps.unauthorizedRef.current,
@@ -97,7 +98,7 @@ const authQueryEffect = (
 const useAuthQuery = (deps: AuthQueryDeps): UseQueryResult<AuthUser | null> =>
   useQuery<AuthUser | null>({
     queryKey: ["/api/auth/me"],
-    enabled: deps.hasCookie && !deps.unauthorizedRef.current,
+    enabled: deps.hasCookie,
     queryFn: ({ signal }) => Effect.runPromise(authQueryEffect(deps, signal)),
     retry: false,
     staleTime: 5 * 60 * 1000,
