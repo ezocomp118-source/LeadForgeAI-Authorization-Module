@@ -284,7 +284,7 @@ export declare const userProfiles: import("drizzle-orm/pg-core").PgTableWithColu
     schema: undefined;
     columns: {
         createdAt: import("drizzle-orm/pg-core").PgColumn<{
-            name: string;
+            name: "created_at";
             tableName: "user_profiles";
             dataType: "date";
             columnType: "PgTimestamp";
@@ -301,7 +301,7 @@ export declare const userProfiles: import("drizzle-orm/pg-core").PgTableWithColu
             generated: undefined;
         }, {}, {}>;
         updatedAt: import("drizzle-orm/pg-core").PgColumn<{
-            name: string;
+            name: "updated_at";
             tableName: "user_profiles";
             dataType: "date";
             columnType: "PgTimestamp";
@@ -393,7 +393,7 @@ export declare const userMessengers: import("drizzle-orm/pg-core").PgTableWithCo
     schema: undefined;
     columns: {
         createdAt: import("drizzle-orm/pg-core").PgColumn<{
-            name: string;
+            name: "created_at";
             tableName: "user_messengers";
             dataType: "date";
             columnType: "PgTimestamp";
@@ -410,7 +410,7 @@ export declare const userMessengers: import("drizzle-orm/pg-core").PgTableWithCo
             generated: undefined;
         }, {}, {}>;
         updatedAt: import("drizzle-orm/pg-core").PgColumn<{
-            name: string;
+            name: "updated_at";
             tableName: "user_messengers";
             dataType: "date";
             columnType: "PgTimestamp";

@@ -8,12 +8,7 @@ type VerificationResponseBody = {
         };
     };
 };
-declare const verificationRequestResponses: {
-    readonly 200: VerificationResponseBody;
-    readonly 401: VerificationResponseBody;
-    readonly 429: VerificationResponseBody;
-};
-declare const confirmRequestBody: (field: "token" | "code") => {
+type ConfirmationRequestBody = {
     readonly required: true;
     readonly content: {
         readonly "application/json": {
@@ -27,9 +22,10 @@ declare const confirmRequestBody: (field: "token" | "code") => {
         };
     };
 };
-declare const confirmResponses: (successDescription: string, invalidDescription: string) => {
+declare const verificationRequestResponses: {
     readonly 200: VerificationResponseBody;
-    readonly 400: VerificationResponseBody;
+    readonly 401: VerificationResponseBody;
+    readonly 429: VerificationResponseBody;
 };
 export declare const verificationPaths: {
     "/api/auth/email/verify/request": {
@@ -41,8 +37,11 @@ export declare const verificationPaths: {
     "/api/auth/email/verify/confirm": {
         readonly post: {
             readonly summary: string;
-            readonly requestBody: ReturnType<typeof confirmRequestBody>;
-            readonly responses: ReturnType<typeof confirmResponses>;
+            readonly requestBody: ConfirmationRequestBody;
+            readonly responses: {
+                readonly 200: VerificationResponseBody;
+                readonly 400: VerificationResponseBody;
+            };
         };
     };
     "/api/auth/phone/verify/request": {
@@ -54,8 +53,11 @@ export declare const verificationPaths: {
     "/api/auth/phone/verify/confirm": {
         readonly post: {
             readonly summary: string;
-            readonly requestBody: ReturnType<typeof confirmRequestBody>;
-            readonly responses: ReturnType<typeof confirmResponses>;
+            readonly requestBody: ConfirmationRequestBody;
+            readonly responses: {
+                readonly 200: VerificationResponseBody;
+                readonly 400: VerificationResponseBody;
+            };
         };
     };
 };

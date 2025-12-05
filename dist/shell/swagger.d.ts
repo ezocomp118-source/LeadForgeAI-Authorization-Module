@@ -48,7 +48,7 @@ export declare const swaggerDocument: {
         "/api/auth/email/verify/confirm": {
             readonly post: {
                 readonly summary: string;
-                readonly requestBody: ReturnType<(field: "token" | "code") => {
+                readonly requestBody: {
                     readonly required: true;
                     readonly content: {
                         readonly "application/json": {
@@ -61,8 +61,8 @@ export declare const swaggerDocument: {
                             };
                         };
                     };
-                }>;
-                readonly responses: ReturnType<(successDescription: string, invalidDescription: string) => {
+                };
+                readonly responses: {
                     readonly 200: {
                         readonly description: string;
                         readonly content?: {
@@ -83,7 +83,7 @@ export declare const swaggerDocument: {
                             };
                         };
                     };
-                }>;
+                };
             };
         };
         "/api/auth/phone/verify/request": {
@@ -126,7 +126,7 @@ export declare const swaggerDocument: {
         "/api/auth/phone/verify/confirm": {
             readonly post: {
                 readonly summary: string;
-                readonly requestBody: ReturnType<(field: "token" | "code") => {
+                readonly requestBody: {
                     readonly required: true;
                     readonly content: {
                         readonly "application/json": {
@@ -139,8 +139,8 @@ export declare const swaggerDocument: {
                             };
                         };
                     };
-                }>;
-                readonly responses: ReturnType<(successDescription: string, invalidDescription: string) => {
+                };
+                readonly responses: {
                     readonly 200: {
                         readonly description: string;
                         readonly content?: {
@@ -161,7 +161,7 @@ export declare const swaggerDocument: {
                             };
                         };
                     };
-                }>;
+                };
             };
         };
     };

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useMutation, type UseMutationResult, useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { Effect, pipe } from "effect";
 import { useRef } from "react";
 
@@ -106,7 +106,7 @@ const useAuthQuery = (deps: AuthQueryDeps): UseQueryResult<AuthUser | null> =>
     refetchOnReconnect: (query) => query.state.data !== null,
   });
 
-type LogoutMutation = ReturnType<typeof useMutation<Response, Error, void>>;
+type LogoutMutation = UseMutationResult<Response, Error, void>;
 
 const useLogout = (): LogoutMutation =>
   useMutation<Response>({
