@@ -23,6 +23,7 @@ import {
   insertVerificationCode,
   markPhoneVerified,
   now,
+  type RequestContext,
   respondVerificationError,
   runDbEffect,
   updateAttempts,
@@ -41,7 +42,7 @@ const buildPhoneInsertPayload = (
   user: { readonly id: string; readonly phone: string },
   codeHash: string,
   expiresAt: Date,
-  ctx: ReturnType<typeof extractRequestInfo>,
+  ctx: Omit<RequestContext, "userId">,
 ): Parameters<typeof insertVerificationCode>[0] => ({
   userId: user.id,
   type: "phone" as const,
@@ -92,7 +93,7 @@ const confirmPhone = (
 const buildRequestPhoneProgram = (
   userId: string,
   res: Parameters<RequestHandler>[1],
-  ctx: ReturnType<typeof extractRequestInfo>,
+  ctx: Omit<RequestContext, "userId">,
 ): Effect.Effect<void, VerificationDbError> =>
   Effect.gen(function*(_) {
     const user = yield* _(loadUserForVerification(userId, res));

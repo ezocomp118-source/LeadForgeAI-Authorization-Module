@@ -5,6 +5,19 @@ type VerificationResponseBody = {
   };
 };
 
+type ConfirmationRequestBody = {
+  readonly required: true;
+  readonly content: {
+    readonly "application/json": {
+      readonly schema: {
+        readonly type: "object";
+        readonly required: readonly string[];
+        readonly properties: Record<string, { readonly type: "string" }>;
+      };
+    };
+  };
+};
+
 const verificationRequestResponses: {
   readonly 200: VerificationResponseBody;
   readonly 401: VerificationResponseBody;
@@ -42,18 +55,7 @@ const requestPath = (
 
 const confirmRequestBody = (
   field: "token" | "code",
-): {
-  readonly required: true;
-  readonly content: {
-    readonly "application/json": {
-      readonly schema: {
-        readonly type: "object";
-        readonly required: readonly string[];
-        readonly properties: Record<string, { readonly type: "string" }>;
-      };
-    };
-  };
-} => ({
+): ConfirmationRequestBody => ({
   required: true,
   content: {
     "application/json": {
@@ -100,8 +102,8 @@ const confirmPath = (
 ): {
   readonly post: {
     readonly summary: string;
-    readonly requestBody: ReturnType<typeof confirmRequestBody>;
-    readonly responses: ReturnType<typeof confirmResponses>;
+    readonly requestBody: ConfirmationRequestBody;
+    readonly responses: { readonly 200: VerificationResponseBody; readonly 400: VerificationResponseBody };
   };
 } => ({
   post: {

@@ -1,4 +1,5 @@
 import { date, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import type { PgTimestampBuilderInitial } from "drizzle-orm/pg-core/columns/timestamp";
 
 import { departments, positions, users } from "./identity.js";
 
@@ -25,10 +26,12 @@ export const messengerPlatform = pgEnum("messenger_platform", [
 // CHANGE: Builder for audit timestamps to avoid duplicated column definitions
 // WHY: Keep jscpd clean while creating fresh column builders per table
 // PURITY: CORE
-const buildAuditTimestamps = (): {
-  readonly createdAt: ReturnType<typeof timestamp>;
-  readonly updatedAt: ReturnType<typeof timestamp>;
-} => ({
+type AuditTimestamps = {
+  readonly createdAt: PgTimestampBuilderInitial<"created_at">;
+  readonly updatedAt: PgTimestampBuilderInitial<"updated_at">;
+};
+
+const buildAuditTimestamps = (): AuditTimestamps => ({
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

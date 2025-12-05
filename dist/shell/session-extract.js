@@ -49,30 +49,20 @@ const readUserId = (sessionData) => {
     const passportId = sessionData.passport?.user?.id;
     return typeof passportId === "string" && passportId.length > 0 ? passportId : null;
 };
-/**
- * CHANGE: Extract userId from session cookie for WebSocket upgrade or raw HTTP
- * WHY: Allow host apps to reuse Authorization Module session parsing without duplicating code
- * QUOTE(ТЗ): "получить userId из HTTP cookie сессии ... без копирования кода"
- * REF: AUTH-WS-SESSION
- * PURITY: SHELL
- * EFFECT: Effect<Promise<string | null>, never, never>
- * INVARIANT: Returns null on missing/invalid cookie or store lookup errors
- * COMPLEXITY: O(1) lookup plus store I/O
- */
 export const getSessionUserIdFromRequest = (request, options) => {
     const cookieHeader = request.headers.cookie;
     if (!cookieHeader) {
-        return Effect.runPromise(Effect.succeed(null));
+        return Effect.succeed(null);
     }
     const cookies = parseCookies(cookieHeader);
     const cookieName = options?.cookieName ?? "connect.sid";
     const rawCookie = cookies[cookieName];
     if (!rawCookie) {
-        return Effect.runPromise(Effect.succeed(null));
+        return Effect.succeed(null);
     }
     const sessionId = extractSessionId(rawCookie);
     if (!sessionId) {
-        return Effect.runPromise(Effect.succeed(null));
+        return Effect.succeed(null);
     }
     const store = resolveStore(options ?? {});
     const lookup = Effect.async((resume) => {
@@ -84,5 +74,5 @@ export const getSessionUserIdFromRequest = (request, options) => {
             resume(Effect.succeed(readUserId(sessionData)));
         });
     });
-    return Effect.runPromise(pipe(lookup));
+    return pipe(lookup);
 };

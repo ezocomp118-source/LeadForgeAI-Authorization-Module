@@ -18,9 +18,6 @@ export const messengerPlatform = pgEnum("messenger_platform", [
     "telegram",
     "whatsapp",
 ]);
-// CHANGE: Builder for audit timestamps to avoid duplicated column definitions
-// WHY: Keep jscpd clean while creating fresh column builders per table
-// PURITY: CORE
 const buildAuditTimestamps = () => ({
     createdAt: timestamp("created_at", { withTimezone: true })
         .notNull()

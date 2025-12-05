@@ -22,6 +22,7 @@ import {
   insertVerificationCode,
   markEmailVerified,
   now,
+  type RequestContext,
   respondVerificationError,
   updateAttempts,
   type VerificationDbError,
@@ -87,7 +88,7 @@ const confirmEmail = (
 const buildRequestEmailProgram = (
   userId: string,
   res: Parameters<RequestHandler>[1],
-  ctx: ReturnType<typeof extractRequestInfo>,
+  ctx: Omit<RequestContext, "userId">,
 ): Effect.Effect<void, EmailSendError | VerificationDbError> =>
   Effect.gen(function*(_) {
     const user = yield* _(loadUserForVerification(userId, res));
